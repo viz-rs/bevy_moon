@@ -1,16 +1,15 @@
 // The MIT License
 // Copyright © 2024 Inigo Quilez
 // 
-// Article:
-//  - https://iquilezles.org/articles/roundedboxes/
-// Shaders:
-//  - https://www.shadertoy.com/view/4cG3R1
-//  - https://www.shadertoy.com/view/wlcXD2
+// <https://iquilezles.org/articles/roundedboxes/>
 
 #define_import_path bevy_moon::corners
 
 #import bevy_render::maths::PI_2
 
+// Select a corner shape by a kind.
+//
+// <https://www.shadertoy.com/view/4cG3R1>
 fn sd_corner(uv: vec2<f32>, kind: u32) -> f32 {
     switch kind {
         case 1: { return sd_corner_parabola(uv); }
@@ -20,11 +19,14 @@ fn sd_corner(uv: vec2<f32>, kind: u32) -> f32 {
     }
 }
 
+// Traditional Circle rounded box
 fn sd_corner_circle(uv: vec2<f32>) -> f32 {
     return length(uv - vec2(0.0, -1.0)) - sqrt(2.0);
 }
 
-// https://www.shadertoy.com/view/ws3GD7
+// New Parabolic rounded box
+//
+// <https://www.shadertoy.com/view/ws3GD7>
 fn sd_corner_parabola(uv: vec2<f32>) -> f32 {
     let y = (0.5 + uv.y) * (2.0 / 3.0);
     let h = uv.x * uv.x + y * y * y;
@@ -34,7 +36,9 @@ fn sd_corner_parabola(uv: vec2<f32>) -> f32 {
     return length(uv - q) * sign(uv.y - q.y);
 }
 
-// https://www.shadertoy.com/view/3t23WG
+// New Cosine rounded box
+//
+// <https://www.shadertoy.com/view/3t23WG>
 fn sd_corner_cosine(uv: vec2<f32>) -> f32 {
     var ta = 0.0; 
     var tb = PI_2 / 4.0;
@@ -58,6 +62,9 @@ fn sd_corner_cosine(uv: vec2<f32>) -> f32 {
     return length(pa - di * h) * sign(pa.y * di.x - pa.x * di.y) * (4.0 / PI_2);
 }
 
+// New Cubic rounded box
+//
+// <https://www.shadertoy.com/view/4fyGz1>
 fn sd_corner_cubic(uv: vec2<f32>) -> f32 {
     var ta = 0.0; 
     var tb = 1.0;
