@@ -96,17 +96,19 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
         color = mix(background_color, border_color, smoothstep(-0.5, 0.5, internal_distance));
     }
     
-    // If there's a corner radius we need to do some anti aliasing to smooth out the rounded corner effect.
-    if radius > 0.0 {
-        // outer sdf
-        let external_distance = sd_rounded_box(point, half_size, radius);
-    
-        let a = 1.0 - smoothstep(-0.75, -0.1, external_distance);
-        let b = 1.0 - smoothstep(-0.1, 0.55, external_distance); // +0.65
-        
-        // color.a *= a; // The original is just multiplied by a.
-        color.a *= mix(a, b, b); // Repair the blank gap caused by antiasing.
+    // If there's no corner radius, we don't need to do any anti aliasing.
+    if radius <= 0.0 {
+        return color;
     }
-        
+
+    // outer sdf
+    let external_distance = sd_rounded_box(point, half_size, radius);
+
+    let a = 1.0 - smoothstep(-0.75, -0.1, external_distance);
+    let b = 1.0 - smoothstep(-0.1, 0.55, external_distance); // +0.65
+
+    // color.a *= a; // The original is just multiplied by a.
+    color.a *= mix(a, b, b); // Repair the blank gap caused by antiasing.
+
     return color;
 }
