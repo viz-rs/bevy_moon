@@ -1,0 +1,105 @@
+[workspace]
+resolver = "3"
+members = [
+  "crates/*",
+  "examples"
+]
+
+[workspace.package]
+authors = ["Fangdun Tsai <fundon@pindash.io>"]
+categories = ["game-engines", "graphics", "gui", "rendering"]
+description = "A visual creative space"
+edition = "2024"
+homepage = "https://moon.viz.rs"
+keywords = ["bevy", "viz", "moon"]
+license = "MIT OR Apache-2.0"
+publish = false
+repository = "https://github.com/viz-rs/bevy_moon"
+version = "0.1.0"
+
+[workspace.dependencies]
+bevy_moon = { path = "crates/bevy_moon" }
+bevy_moon_core = { path = "crates/bevy_moon_core" }
+bevy_moon_render = { path = "crates/bevy_moon_render" }
+
+# bevy
+bevy = { version = "0.19.0-dev", default-features = false, git = "https://github.com/bevyengine/bevy.git" }
+bevy_a11y = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+bevy_app = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+bevy_asset = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+bevy_camera = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+bevy_camera_controller = { version = "0.19.0-dev", default-features = false, git = "https://github.com/bevyengine/bevy.git" }
+bevy_color = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+bevy_core_pipeline = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+bevy_derive = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+bevy_ecs = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+bevy_image = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+bevy_input = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+bevy_input_focus = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+bevy_log = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+bevy_math = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+bevy_mesh = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+bevy_pbr = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+bevy_platform = { version = "0.19.0-dev", default-features = false, git = "https://github.com/bevyengine/bevy.git" }
+bevy_picking = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+bevy_reflect = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+bevy_shader = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+bevy_render = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+bevy_sprite = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+bevy_sprite_render = { version = "0.19.0-dev", features = ["bevy_text"], git = "https://github.com/bevyengine/bevy.git" }
+bevy_text = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+bevy_transform = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+bevy_utils = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+bevy_window = { version = "0.19.0-dev", git = "https://github.com/bevyengine/bevy.git" }
+
+# other
+bitflags = "2.0"
+dyn-clone = "1.0"
+fixedbitset = { version = "0.5", default-features = false }
+radsort = "0.1"
+smallvec = { version = "1.0", features = ["union", "const_new"] }
+stacksafe = "1.0"
+taffy = "0.9"
+glam = "0.30"
+
+accesskit = "0.21"
+bytemuck = { version = "1.5", features = ["derive"] }
+derive_more = { version = "2", default-features = false, features = ["from"] }
+serde = { version = "1", features = ["derive"] }
+thiserror = { version = "2", default-features = false }
+tracing = { version = "0.1", default-features = false, features = ["std"] }
+uuid = { version = "1.1", features = ["v4"] }
+
+[workspace.lints]
+
+[profile]
+
+# Enable a small amount of optimization in the dev profile.
+[profile.dev]
+opt-level = 1
+debug = false
+
+# Enable a large amount of optimization in the dev profile for dependencies.
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.dev.build-override]
+opt-level = 3
+
+# Enable more optimization in the release profile at the cost of compile time.
+[profile.release]
+# debug = true      # Good for profilers
+opt-level = "z"     # Optimize for size (lean binary for distribution)
+lto = true          # Link-time optimization
+codegen-units = 1   # Single codegen unit for better optimization
+panic = "abort"     # Smaller binary, no unwinding overhead
+strip = true        # Remove debug symbols
+
+# Optimize for size in the web-release profile to reduce load times and bandwidth usage on web.
+[profile.web-release]
+inherits = "release" # Default to release profile
+opt-level = "z"      # Optimize for size (lean binary for distribution)
+lto = true           # Link-time optimization
+codegen-units = 1    # Single codegen unit for better optimization
+panic = "abort"      # Smaller binary, no unwinding overhead
+strip = true         # Remove debug symbols

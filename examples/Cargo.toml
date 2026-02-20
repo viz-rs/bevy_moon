@@ -1,0 +1,26 @@
+[package]
+name = "examples"
+publish = false
+edition.workspace = true
+
+[dependencies]
+bevy = { workspace = true, features = [
+  "pan_camera", 
+  "default_app",
+  "default_platform",
+  "2d_bevy_render",
+  "scene",
+  "audio",
+  "picking",
+] }
+
+bevy_moon.workspace = true
+bevy_moon_core.workspace = true
+bevy_moon_render.workspace = true
+
+taffy.workspace = true
+tracing = { workspace = true }
+
+[[example]]
+name = "ui"
+path = "src/ui.rs"
