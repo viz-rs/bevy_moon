@@ -1,7 +1,7 @@
 #import bevy_render::view::View
 #import bevy_moon::utils::{antialias, antialias_alpha, over}
-#import bevy_moon::utils::{sd_rounded_box, sd_inset_rounded_box}
 #import bevy_moon::utils::{is_xyzw_zero, get_vertex_by_index, get_corner_index, get_inset_by_index}
+#import bevy_moon::rectangles::{sd_rounded_box, sd_inset_rounded_box}
 
 @group(0) @binding(0) var<uniform> view: View;
 
