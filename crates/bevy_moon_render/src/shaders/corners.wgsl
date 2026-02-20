@@ -1,10 +1,15 @@
+// The MIT License
+// Copyright © 2024 Inigo Quilez
+// 
+// Article:
+//  - https://iquilezles.org/articles/roundedboxes/
+// Shaders:
+//  - https://www.shadertoy.com/view/4cG3R1
+//  - https://www.shadertoy.com/view/wlcXD2
+
 #define_import_path bevy_moon::corners
 
 #import bevy_render::maths::PI_2
-
-// https://iquilezles.org/articles/roundedboxes/
-// https://www.shadertoy.com/view/4cG3R1
-// https://www.shadertoy.com/view/wlcXD2
 
 fn sd_corner(uv: vec2<f32>, kind: u32) -> f32 {
     switch kind {
