@@ -7,7 +7,7 @@
 
 #import bevy_render::maths::PI_2
 
-// Select a corner shape by a kind.
+// Selects a corner shape by a kind
 //
 // <https://www.shadertoy.com/view/4cG3R1>
 fn sd_corner(uv: vec2<f32>, kind: u32) -> f32 {

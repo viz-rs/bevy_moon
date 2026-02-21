@@ -2,22 +2,24 @@
 
 const antialias_threshold: f32 = 0.5;
 
-const grid_bases: vec4<u32> = vec4(0u, 1u, 2u, 0u);
-
 // const quad_vertices: array<vec2<f32>, 6> = array(
-//   vec2(-0.5, -0.5), // 0 - BottomLeft
-//   vec2( 0.5,  0.5), // 1 - TopRight
-//   vec2(-0.5,  0.5), // 2 - TopLeft
-//   vec2(-0.5, -0.5), // 3 - BottomLeft
-//   vec2( 0.5, -0.5), // 4 - BottomRight
-//   vec2( 0.5,  0.5), // 5 - TopRight
+//     vec2(-0.5, -0.5), // 0 - BottomLeft
+//     vec2( 0.5, -0.5), // 1 - BottomRight
+//     vec2(-0.5,  0.5), // 2 - TopLeft
+//     vec2( 0.5,  0.5), // 3 - TopRight
+//     vec2(-0.5, -0.5), // 4 - BottomLeft
+//     vec2( 0.5, -0.5), // 5 - BottomRight
 // );
 const quad_vertices: array<vec2<f32>, 4> = array(
     vec2(-0.5, -0.5), // 0 - BottomLeft
     vec2( 0.5, -0.5), // 1 - BottomRight
-    vec2( 0.5,  0.5), // 2 - TopRight
-    vec2(-0.5,  0.5), // 3 - TopLeft
+    vec2(-0.5,  0.5), // 2 - TopLeft
+    vec2( 0.5,  0.5), // 3 - TopRight
 );
+
+fn normalize_vertex_index(index: u32) -> u32 {
+    return index % 4;
+}
 
 fn get_vertex_by_index(index: u32) -> vec2<f32> {
     return quad_vertices[index];
@@ -25,9 +27,15 @@ fn get_vertex_by_index(index: u32) -> vec2<f32> {
 
 fn get_corner_index(point: vec2<f32>) -> u32 {
     let s = sign(point);
-    let c = select(grid_bases.x, grid_bases.y, s.x == s.y);
-    let r = select(grid_bases.z, grid_bases.w, s.y == 1.0);
-    return c + r;
+    // normalize to [0,1]
+    let uv = vec2<u32>((s + 1.0) / 2.0);
+    var i = uv.x + uv.y * 2;
+    // top: i ^ 2, bottom: i ^ 3
+    i ^= 2;
+    if uv.y == 0 {
+        i ^= 1;
+    }
+    return i;
 }
 
 fn get_inset_by_index(insets: vec4<f32>, index: u32) -> vec2<f32> {

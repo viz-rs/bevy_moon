@@ -9,11 +9,8 @@ use bevy_render::{
     render_phase::{
         PhaseItem, RenderCommand, RenderCommandResult, SetItemPipeline, TrackedRenderPass,
     },
-    render_resource::IndexFormat,
     view::ViewUniformOffset,
 };
-
-use crate::pipelines::quad::{INDEXES_COUNT, INDEXES_RANGE};
 
 use super::extract::{UiBatch, UiMeta, UiViewBindGroup};
 
@@ -87,25 +84,14 @@ impl<P: PhaseItem> RenderCommand<P> for DrawUiDivBatch {
             return RenderCommandResult::Skip;
         };
 
-        let UiMeta {
-            index_buffer,
-            instance_buffer,
-        } = ui_meta.into_inner();
+        let UiMeta { instance_buffer } = ui_meta.into_inner();
 
-        let (Some(instances), instances_count) = (instance_buffer.buffer(), instance_buffer.len())
-        else {
+        let Some(instances) = instance_buffer.buffer() else {
             return RenderCommandResult::Failure("missing vertices to draw ui");
         };
-        let (Some(indexes), indexes_count) = (index_buffer.buffer(), index_buffer.len()) else {
-            return RenderCommandResult::Failure("missing indexes to draw ui");
-        };
-
-        debug_assert_eq!(indexes_count / instances_count, INDEXES_COUNT);
 
         pass.set_vertex_buffer(0, instances.slice(..));
-        pass.set_index_buffer(indexes.slice(..), IndexFormat::Uint32);
-        // pass.draw_indexed(INDEXES_RANGE, 0, 0..instances_count as u32);
-        pass.draw_indexed(INDEXES_RANGE, 0, batch.range.clone());
+        pass.draw(0..4, batch.range.clone());
 
         RenderCommandResult::Success
     }

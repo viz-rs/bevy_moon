@@ -4,13 +4,13 @@ use bevy_ecs::{
     system::{Commands, Res},
 };
 use bevy_image::BevyDefault;
-use bevy_mesh::{VertexBufferLayout, VertexFormat};
+use bevy_mesh::{PrimitiveTopology, VertexBufferLayout, VertexFormat};
 use bevy_render::{
     render_resource::{
         BindGroupLayoutDescriptor, BindGroupLayoutEntries, BlendState, ColorTargetState,
-        ColorWrites, FragmentState, MultisampleState, RenderPipelineDescriptor, SamplerBindingType,
-        ShaderStages, SpecializedRenderPipeline, TextureFormat, TextureSampleType, VertexState,
-        VertexStepMode,
+        ColorWrites, FragmentState, FrontFace, MultisampleState, PolygonMode, PrimitiveState,
+        RenderPipelineDescriptor, SamplerBindingType, ShaderStages, SpecializedRenderPipeline,
+        TextureFormat, TextureSampleType, VertexState, VertexStepMode,
         binding_types::{sampler, texture_2d, uniform_buffer},
     },
     view::{ViewTarget, ViewUniform},
@@ -67,7 +67,7 @@ impl SpecializedRenderPipeline for UiPipeline {
                 VertexFormat::Float32x4,
                 // corner_radii
                 VertexFormat::Float32x4,
-                // border width
+                // border widths
                 VertexFormat::Float32x4,
                 // border color
                 VertexFormat::Float32x4,
@@ -91,6 +91,15 @@ impl SpecializedRenderPipeline for UiPipeline {
                 })],
                 ..default()
             }),
+            primitive: PrimitiveState {
+                topology: PrimitiveTopology::TriangleStrip,
+                strip_index_format: None,
+                front_face: FrontFace::Ccw,
+                cull_mode: None,
+                polygon_mode: PolygonMode::Fill,
+                conservative: false,
+                unclipped_depth: false,
+            },
             multisample: MultisampleState {
                 count,
                 mask: !0,

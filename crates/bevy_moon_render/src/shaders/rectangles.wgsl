@@ -15,7 +15,7 @@ fn sd_rounded_box(point: vec2<f32>, half_size: vec2<f32>, radius: f32) -> f32 {
     let uv = vec2(abs(q.x - q.y), q.x + q.y - radius) / radius;
     
     // distance to corner
-    let d = sd_corner(uv, 0u) ;
+    let d = sd_corner(uv, 0u);
     
     // undo scale and return
     return d * radius * sqrt(0.5);

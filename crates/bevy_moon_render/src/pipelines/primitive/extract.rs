@@ -25,14 +25,12 @@ pub struct UiInstance {
 
 #[derive(Resource)]
 pub struct UiMeta {
-    pub index_buffer: RawBufferVec<u32>,
     pub instance_buffer: RawBufferVec<UiInstance>,
 }
 
 impl Default for UiMeta {
     fn default() -> Self {
         Self {
-            index_buffer: RawBufferVec::new(BufferUsages::INDEX),
             instance_buffer: RawBufferVec::new(BufferUsages::VERTEX),
         }
     }

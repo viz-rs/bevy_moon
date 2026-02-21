@@ -19,12 +19,9 @@ use bevy_render::{
 use smallvec::SmallVec;
 
 use crate::{
-    pipelines::{
-        primitive::{
-            draw::DrawUi,
-            pipeline::{UiPipeline, UiPipelineKey},
-        },
-        quad::INDEXES,
+    pipelines::primitive::{
+        draw::DrawUi,
+        pipeline::{UiPipeline, UiPipelineKey},
     },
     transparent::TransparentUi,
     view::{MoonUiCameraView, MoonUiOptions, MoonUiViewTarget},
@@ -130,7 +127,6 @@ pub fn prepare_divs(
     mut ui_stack_map: ResMut<UiStackMap>,
     mut previous_len: Local<usize>,
 ) {
-    ui_meta.index_buffer.clear();
     ui_meta.instance_buffer.clear();
 
     let mut batches: Vec<(Entity, UiBatch)> = Vec::with_capacity(*previous_len);
@@ -156,8 +152,6 @@ pub fn prepare_divs(
 
             let index = ui_meta.instance_buffer.push(instance) as u32;
 
-            ui_meta.index_buffer.extend(INDEXES);
-
             batches.push((
                 item.entity(),
                 UiBatch {
@@ -171,9 +165,6 @@ pub fn prepare_divs(
 
     ui_meta
         .instance_buffer
-        .write_buffer(&render_device, &render_queue);
-    ui_meta
-        .index_buffer
         .write_buffer(&render_device, &render_queue);
 
     *previous_len = batches.len();

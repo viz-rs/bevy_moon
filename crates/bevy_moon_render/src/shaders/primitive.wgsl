@@ -1,6 +1,7 @@
 #import bevy_render::view::View
 #import bevy_moon::utils::{antialias, antialias_alpha, over}
-#import bevy_moon::utils::{is_xyzw_zero, get_vertex_by_index, get_corner_index, get_inset_by_index}
+#import bevy_moon::utils::{is_xyzw_zero}
+#import bevy_moon::utils::{normalize_vertex_index, get_vertex_by_index, get_corner_index, get_inset_by_index}
 #import bevy_moon::rectangles::{sd_rounded_box, sd_inset_rounded_box}
 
 @group(0) @binding(0) var<uniform> view: View;
@@ -9,7 +10,7 @@
 // @group(1) @binding(1) var sprite_sampler: sampler;
 
 struct VertexInput {
-    @builtin(vertex_index) index: u32,
+    @builtin(vertex_index) vertex_index: u32,
     
     @location(0) position: vec3<f32>,
     @location(1) size: vec2<f32>,
@@ -37,12 +38,14 @@ fn vertex(in: VertexInput) -> VertexOutput {
     var out: VertexOutput;
     
     out.size = in.size;
+    out.corner_radii = in.corner_radii;
     out.border_color = in.border_color;
     out.border_widths = in.border_widths;
-    out.corner_radii = in.corner_radii;
     out.background_color = in.color;
     
-    let vertex = get_vertex_by_index(in.index);
+    let vertex_index = normalize_vertex_index(in.vertex_index);
+    let vertex = get_vertex_by_index(vertex_index);
+    
     let local_position = vertex * in.size;
     let world_position = in.position.xyz + vec3(local_position, 0.0);
     
@@ -56,8 +59,8 @@ fn vertex(in: VertexInput) -> VertexOutput {
 @fragment
 fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     let size = in.size;
-    let border_widths = in.border_widths;
     let corner_radii = in.corner_radii;
+    let border_widths = in.border_widths;
     
     let unborded = is_xyzw_zero(border_widths);
     let unrounded = is_xyzw_zero(corner_radii);
@@ -70,11 +73,9 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
         return background_color;
     }
     
-    let half_size = size * 0.5;
     // position relative to the center of the box
     let point = in.local_position;
     let corner_index = get_corner_index(point);
-    let radius = corner_radii[corner_index];
     
     let tl = get_inset_by_index(border_widths, 0); // TopLeft
     let br = get_inset_by_index(border_widths, 2); // BottomRight
@@ -85,6 +86,9 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
         default: { cb = get_inset_by_index(border_widths, corner_index); }
     }
     
+    let half_size = size * 0.5;
+    let radius = corner_radii[corner_index];
+
     var color = background_color;
     
     // If there's a border color and border width we need to calculate the inner sdf.
