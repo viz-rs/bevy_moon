@@ -6,6 +6,8 @@ Counter-clockwise order, starting from the `BottomLeft` corner.
 
 There are two ways to define two triangles (split along / diagonal, **BottomRight-TopLeft** shared edge):
 
+Currently, we are using **TriangleStrip** mode to draw a rectangle with **4** vertices.
+
 ```text
      TopLeft               TopRight
   [-0.5,0.5]       +       [0.5, 0.5]
@@ -22,7 +24,29 @@ There are two ways to define two triangles (split along / diagonal, **BottomRigh
   BottomLeft               BottomRight
 ```
 
-- **Full 6 vertices**:
+### **Full 6 vertices**:
+
+#### TriangleList:
+
+| Index | Vertex      |
+| ----- | ----------- |
+| 0     | BottomLeft  |
+| 1     | BottomRight |
+| 2     | TopLeft     |
+| 3     | TopRight    |
+| 4     | TopLeft     |
+| 5     | BottomRight |
+
+| Triangle | Indexes   | Ordered                            | Area       |
+| -------- | --------- | ---------------------------------- | ---------- |
+| 0        | 0 → 1 → 2 | BottomLeft → BottomRight → TopLeft | LowerLeft  |
+| 1        | 3 → 4 → 5 | TopRight → TopLeft → BottomRight   | UpperRight |
+
+```text
+indexes = [0, 1, 2, 3, 4, 5]
+```
+
+#### TriangleStrip:
 
 | Index | Vertex      |
 | ----- | ----------- |
@@ -36,17 +60,13 @@ There are two ways to define two triangles (split along / diagonal, **BottomRigh
 | Triangle | Indexes   | Ordered                            | Area       |
 | -------- | --------- | ---------------------------------- | ---------- |
 | 0        | 0 → 1 → 2 | BottomLeft → BottomRight → TopLeft | LowerLeft  |
-| 1        | 3 → 4 → 5 | TopRight → TopLeft → BottomRight   | UpperRight |
+| 1        | 2 → 1 → 3 | TopLeft → BottomRight → TopRight   | UpperRight |
 
 ```text
-TriangleList:
-  Indexes = [0, 1, 2, 3, 4, 5]
-
-TriangleStrip:
-  indexes = [0, 1, 2, 2, 1, 3]
+indexes = [0, 1, 2, 2, 1, 3]
 ```
 
-- **Short 4 vertices**:
+### **Short 4 vertices**:
 
 | Index | Vertex      |
 | ----- | ----------- |
@@ -58,14 +78,10 @@ TriangleStrip:
 | Triangle | Indexes   | Ordered                            | Area       |
 | -------- | --------- | ---------------------------------- | ---------- |
 | 0        | 0 → 1 → 2 | BottomLeft → BottomRight → TopLeft | LowerLeft  |
-| 1        | 2 → 1 → 3 | TopRight → TopLeft → BottomRight   | UpperRight |
+| 1        | 2 → 1 → 3 | TopLeft → BottomRight → TopRight   | UpperRight |
 
 ```text
-TriangleList:
-  indexes = [0, 1, 2, 2, 1, 3]
-
-TriangleStrip:
-  indexes = [0, 1, 2, 2, 1, 3]
+indexes = [0, 1, 2, 2, 1, 3]
 ```
 
 ## Quad grid: `vec4<T>`
