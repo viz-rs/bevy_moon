@@ -1,10 +1,10 @@
 use bevy::{
     camera_controller::pan_camera::{PanCamera, PanCameraPlugin},
-    color::palettes::css::{BLACK, BLUE, GREEN, PINK, RED},
+    color::palettes::css::{BLACK, BLUE, GRAY, GREEN, PINK, RED, WHITE},
     prelude::*,
 };
 
-use bevy_moon::prelude::{Corners, MoonPlugin, div};
+use bevy_moon::prelude::{BoxShadow, Corners, MoonPlugin, div};
 use taffy::{LengthPercentage, Rect};
 
 fn setup(
@@ -56,50 +56,68 @@ fn setup(
     //     ),],
     // ));
 
-    commands.spawn((
-        div()
-            .w(100.0)
-            .h(100.0)
-            .background(GREEN)
-            .corner_radii(Corners {
-                top_left: 5.0,
-                top_right: 15.0,
-                bottom_right: 25.0,
-                bottom_left: 35.0,
-            })
-            .border(Rect {
-                top: LengthPercentage::length(5.0),
-                right: LengthPercentage::length(10.0),
-                bottom: LengthPercentage::length(15.0),
-                left: LengthPercentage::length(20.0),
-            })
-            .border_color(RED),
-        Transform::from_xyz(100.0, 0.0, 0.0),
-    ));
+    // commands.spawn((
+    //     div()
+    //         .w(100.0)
+    //         .h(100.0)
+    //         .background(GREEN)
+    //         .corner_radii(Corners {
+    //             top_left: 5.0,
+    //             top_right: 15.0,
+    //             bottom_right: 25.0,
+    //             bottom_left: 35.0,
+    //         })
+    //         .border(Rect {
+    //             top: LengthPercentage::length(5.0),
+    //             right: LengthPercentage::length(10.0),
+    //             bottom: LengthPercentage::length(15.0),
+    //             left: LengthPercentage::length(20.0),
+    //         })
+    //         .border_color(RED)
+    //         .shadow_2xl(),
+    //     Transform::from_xyz(100.0, 0.0, 0.0),
+    // ));
+
+    // commands.spawn((
+    //     div()
+    //         .w(75.0)
+    //         .h(75.0)
+    //         .background(GREEN)
+    //         .border(Rect {
+    //             top: LengthPercentage::length(0.0),
+    //             right: LengthPercentage::length(0.0),
+    //             bottom: LengthPercentage::length(0.0),
+    //             left: LengthPercentage::length(0.0),
+    //         })
+    //         .border_color(BLACK)
+    //         .corner_radii(Corners::all(10.0))
+    //         .shadow_xl(),
+    //     Transform::from_xyz(187.5, 0.0, 0.0),
+    //     children![(
+    //         div().w(50.0).h(50.0).background(BLUE),
+    //         Transform::from_xyz(10.0, -10.0, 0.0),
+    //     )],
+    // ));
 
     commands.spawn((
         div()
-            .w(75.0)
-            .h(75.0)
-            .background(GREEN)
+            .w(164.0)
+            .h(164.0)
             .border(Rect {
-                top: LengthPercentage::length(0.0),
-                right: LengthPercentage::length(0.0),
-                bottom: LengthPercentage::length(0.0),
-                left: LengthPercentage::length(0.0),
+                top: LengthPercentage::length(1.0),
+                right: LengthPercentage::length(1.0),
+                bottom: LengthPercentage::length(1.0),
+                left: LengthPercentage::length(1.0),
             })
-            .border_color(BLACK)
-            .corner_radii(Corners::all(10.0))
-            .shadow_md(),
-        Transform::from_xyz(187.5, 0.0, 0.0),
-        children![(
-            div().w(50.0).h(50.0).background(BLUE),
-            Transform::from_xyz(10.0, -10.0, 0.0),
-        )],
-    ));
-
-    commands.spawn((
-        div().w(50.0).h(50.0).background(BLUE),
+            .background(Color::srgb(0.21, 0.21, 0.21))
+            // .shadow_md()
+            .shadow(vec![BoxShadow {
+                color: Color::BLACK.with_alpha(0.8),
+                offset: Vec2::new(00.0, 20.0),
+                blur_radius: 10.0,
+                spread_radius: -15.0,
+            }])
+            .border_color(WHITE),
         Transform::from_xyz(100.0, -100.0, 0.0),
     ));
 }
@@ -111,6 +129,7 @@ fn main() {
         .add_plugins(PanCameraPlugin)
         .add_plugins(MoonPlugin)
         .add_systems(Startup, setup)
+        // .insert_resource(ClearColor(GRAY.into()));
         .insert_resource(ClearColor(Color::oklch(0.98, 0.0, 0.0)));
 
     app.run();

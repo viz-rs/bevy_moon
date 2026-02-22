@@ -1,4 +1,4 @@
-use std::ops::Range;
+use std::{any::TypeId, ops::Range};
 
 use bevy_ecs::entity::Entity;
 use bevy_math::FloatOrd;
@@ -21,6 +21,15 @@ pub struct TransparentUi {
     pub extra_index: PhaseItemExtraIndex,
     pub indexed: bool,
     pub extracted_index: usize,
+    pub pipeline_key: TypeId,
+}
+
+impl TransparentUi {
+    /// Checks if the pipeline key matches the given key.
+    #[inline]
+    pub fn is(&self, key: TypeId) -> bool {
+        self.pipeline_key == key
+    }
 }
 
 impl PhaseItem for TransparentUi {

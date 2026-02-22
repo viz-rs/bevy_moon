@@ -4,7 +4,7 @@
 
 Counter-clockwise order, starting from the `BottomLeft` corner.
 
-There are two ways to define two triangles (split along / diagonal, **BottomRight-TopLeft** shared edge):
+There are two ways to define two triangles (split along / diagonal, **BottomRight-TopLeft** shared edge).
 
 Currently, we are using **TriangleStrip** mode to draw a rectangle with **4** vertices.
 

@@ -1,6 +1,6 @@
 use bevy_asset::AssetId;
 use bevy_camera::visibility::InheritedVisibility;
-use bevy_color::{Alpha, Color};
+use bevy_color::{Alpha, Color, ColorToComponents, LinearRgba};
 use bevy_ecs::{
     entity::Entity,
     prelude::Res,
@@ -12,11 +12,14 @@ use bevy_render::{Extract, sync_world::RenderEntity};
 use bevy_moon_core::prelude::{ComputedLayout, Div, UiStackMap};
 use bevy_transform::components::GlobalTransform;
 
-use super::extract::{ExtractedUiInstance, ExtractedUiInstances};
+use crate::pipelines::ExtractedUiInstance;
+
+use super::{ExtractedUiInstances, UiInstance};
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
 pub enum ExtractUiSystems {
     CameraViews,
+    Shadows,
     Divs,
     Images,
     Texts,
@@ -75,11 +78,12 @@ fn extract_single_div(
     let index = div.stack_index as f32;
     let main_entity = entity.into();
     let affine = transform.affine();
-    let size = computed_layout.size;
-    let color = color.into();
-    let corner_radii = div.corner_radii; // should be computed_layout.corner_radii
-    let border_color = div.border_color.unwrap_or(Color::NONE).into();
-    let border_widths = computed_layout.border_widths;
+    let position = affine.translation.into();
+    let size = computed_layout.size.into();
+    let color = LinearRgba::from(color).to_f32_array();
+    let corner_radii = div.corner_radii.into(); // should be computed_layout.corner_radii
+    let border_color = LinearRgba::from(div.border_color.unwrap_or(Color::NONE)).to_f32_array();
+    let border_widths = computed_layout.border_widths.to_array();
 
     extracted_ui_instances.instances.push(ExtractedUiInstance {
         index,
@@ -87,11 +91,13 @@ fn extract_single_div(
         entity: (render_entity, main_entity),
         image: AssetId::default(),
 
-        size,
-        affine,
-        color,
-        corner_radii,
-        border_color,
-        border_widths,
+        instance: UiInstance {
+            size,
+            position,
+            color,
+            corner_radii,
+            border_color,
+            border_widths,
+        },
     });
 }

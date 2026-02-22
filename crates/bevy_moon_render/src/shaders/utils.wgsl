@@ -45,27 +45,3 @@ fn get_inset_by_index(insets: vec4<f32>, index: u32) -> vec2<f32> {
 fn is_xyzw_zero(v: vec4<f32>) -> bool {
     return all(v == vec4(0.0));
 }
-
-// anti-aliasing width without `fwidth`
-fn antialias(distance: f32) -> f32 {
-    return saturate(antialias_threshold - distance);
-}
-
-fn antialias_f(distance: f32) -> f32 {
-    let aa_width = fwidth(distance);
-    let t = 1.0 - smoothstep(-aa_width, aa_width, distance); 
-    return t;
-}
-
-fn antialias_alpha(alpha: f32, distance: f32) -> f32 {
-    let t = antialias(distance);
-    // let t = antialias_f(distance);
-    return saturate(alpha * t);
-}
-
-fn over(below: vec4<f32>, above: vec4<f32>) -> vec4<f32> {
-    let d = 1.0 - above.a;
-    let alpha = above.a + below.a * d;
-    let color = (above.rgb * above.a + below.rgb * below.a * d) / alpha;
-    return vec4(color, alpha);
-}

@@ -9,13 +9,12 @@ use bevy_render::{
 };
 
 use bevy_moon_core::prelude::UiStackMap;
-use bevy_shader::load_shader_library;
 
 use crate::{transparent::TransparentUi, view::extract_camera_views};
 
 use super::{
+    ExtractedUiInstances, UiInstancesMeta,
     draw::DrawUi,
-    extract::{ExtractedUiInstances, UiMeta},
     pipeline::{UiPipeline, init_ui_pipeline},
     render::{prepare_div_view_bind_groups, prepare_divs, queue_divs},
     systems::{ExtractUiSystems, extract_divs, extract_images, extract_texts},
@@ -38,13 +37,14 @@ impl Plugin for MoonPrimitiveRenderPlugin {
             .add_render_command::<TransparentUi, DrawUi>();
 
         render_app
-            .init_resource::<UiMeta>()
+            .init_resource::<UiInstancesMeta>()
             .init_resource::<ExtractedUiInstances>();
 
         render_app.configure_sets(
             ExtractSchedule,
             (
                 ExtractUiSystems::CameraViews,
+                ExtractUiSystems::Shadows,
                 ExtractUiSystems::Divs,
                 ExtractUiSystems::Images,
                 ExtractUiSystems::Texts,

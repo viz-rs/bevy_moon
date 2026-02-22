@@ -15,5 +15,5 @@ pub mod prelude {
     pub use crate::measure::{Measure, MeasureArgs};
     pub use crate::plugin::MoonCorePlugin;
     pub use crate::stack::UiStackMap;
-    pub use crate::style::Corners;
+    pub use crate::style::{BoxShadow, Corners};
 }

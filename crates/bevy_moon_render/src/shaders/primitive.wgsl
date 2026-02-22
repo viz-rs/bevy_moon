@@ -1,7 +1,7 @@
 #import bevy_render::view::View
-#import bevy_moon::utils::{antialias, antialias_alpha, over}
 #import bevy_moon::utils::{is_xyzw_zero}
-#import bevy_moon::utils::{normalize_vertex_index, get_vertex_by_index, get_corner_index, get_inset_by_index}
+#import bevy_moon::utils::{normalize_vertex_index, get_vertex_by_index}
+#import bevy_moon::utils::{get_corner_index, get_inset_by_index}
 #import bevy_moon::rectangles::{sd_rounded_box, sd_inset_rounded_box}
 
 @group(0) @binding(0) var<uniform> view: View;
@@ -24,8 +24,8 @@ struct VertexOutput {
     @builtin(position) clip_position: vec4<f32>,
     
     @location(0) uv: vec2<f32>,
-    
     @location(1) local_position: vec2<f32>,
+    
     @location(2) @interpolate(flat) size: vec2<f32>,
     @location(3) @interpolate(flat) background_color: vec4<f32>,
     @location(4) @interpolate(flat) corner_radii: vec4<f32>,

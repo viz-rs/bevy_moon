@@ -12,7 +12,7 @@ use bevy_render::{
     view::ViewUniformOffset,
 };
 
-use super::extract::{UiBatch, UiMeta, UiViewBindGroup};
+use super::{UiInstancesBatch, UiInstancesMeta, UiInstancesViewBindGroup};
 
 pub type DrawUi = (
     SetItemPipeline,
@@ -24,7 +24,7 @@ pub type DrawUi = (
 pub struct SetUiViewBindGroup<const I: usize>;
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUiViewBindGroup<I> {
     type Param = ();
-    type ViewQuery = (Read<ViewUniformOffset>, Read<UiViewBindGroup>);
+    type ViewQuery = (Read<ViewUniformOffset>, Read<UiInstancesViewBindGroup>);
     type ItemQuery = ();
 
     fn render<'w>(
@@ -68,9 +68,9 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUiViewBindGroup<I> {
 
 pub struct DrawUiDivBatch;
 impl<P: PhaseItem> RenderCommand<P> for DrawUiDivBatch {
-    type Param = SRes<UiMeta>;
+    type Param = SRes<UiInstancesMeta>;
     type ViewQuery = ();
-    type ItemQuery = Read<UiBatch>;
+    type ItemQuery = Read<UiInstancesBatch>;
 
     #[inline]
     fn render<'w>(
@@ -84,7 +84,9 @@ impl<P: PhaseItem> RenderCommand<P> for DrawUiDivBatch {
             return RenderCommandResult::Skip;
         };
 
-        let UiMeta { instance_buffer } = ui_meta.into_inner();
+        let UiInstancesMeta {
+            instance_buffer, ..
+        } = ui_meta.into_inner();
 
         let Some(instances) = instance_buffer.buffer() else {
             return RenderCommandResult::Failure("missing vertices to draw ui");

@@ -11,41 +11,38 @@ use bevy_render::{
     render_resource::{
         BindGroupLayoutDescriptor, BindGroupLayoutEntries, BlendState, ColorTargetState,
         ColorWrites, FragmentState, FrontFace, MultisampleState, PolygonMode, PrimitiveState,
-        RenderPipelineDescriptor, SamplerBindingType, ShaderStages, SpecializedRenderPipeline,
-        TextureFormat, TextureSampleType, VertexState, VertexStepMode,
-        binding_types::{sampler, texture_2d, uniform_buffer},
+        RenderPipelineDescriptor, ShaderStages, SpecializedRenderPipeline, TextureFormat,
+        VertexState, VertexStepMode, binding_types::uniform_buffer,
     },
     view::{ViewTarget, ViewUniform},
 };
-use bevy_shader::Shader;
+use bevy_shader::{Shader, ShaderDefVal};
 use bevy_sprite_render::Mesh2dPipelineKey;
 use bevy_utils::default;
 
 #[derive(Resource, Clone)]
-pub struct UiPipeline {
+pub struct UiShadowsPipeline {
     pub view_layout: BindGroupLayoutDescriptor,
-    // pub image_layout: BindGroupLayoutDescriptor,
     pub shader: Handle<Shader>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct UiPipelineKey {
+pub struct UiShadowsPipelineKey {
     pub mesh_key: Mesh2dPipelineKey,
-    // pub anti_alias: bool,
+    /// Number of samples, a higher value results in better quality shadows.
+    pub samples: u32,
 }
 
-pub const UI_PIPELINE_KEY: TypeId = TypeId::of::<UiPipelineKey>();
+pub const UI_SHADOWS_PIPELINE_KEY: TypeId = TypeId::of::<UiShadowsPipelineKey>();
 
-impl SpecializedRenderPipeline for UiPipeline {
-    type Key = UiPipelineKey;
+impl SpecializedRenderPipeline for UiShadowsPipeline {
+    type Key = UiShadowsPipelineKey;
 
     fn specialize(&self, key: Self::Key) -> RenderPipelineDescriptor {
-        // let shader_defs = key
-        //     .anti_alias
-        //     .then_some(vec!["ANTI_ALIAS".into()])
-        //     .unwrap_or_default();
-
-        let shader_defs = vec![];
+        let shader_defs = vec![ShaderDefVal::UInt(
+            "SHADOW_SAMPLES".to_string(),
+            key.samples,
+        )];
 
         let mesh_key = key.mesh_key;
 
@@ -55,10 +52,7 @@ impl SpecializedRenderPipeline for UiPipeline {
         };
         let count = mesh_key.msaa_samples();
 
-        let layout = vec![
-            self.view_layout.clone(),
-            // , self.image_layout.clone()
-        ];
+        let layout = vec![self.view_layout.clone()];
 
         let vertex_layout = VertexBufferLayout::from_vertex_formats(
             VertexStepMode::Instance,
@@ -71,10 +65,8 @@ impl SpecializedRenderPipeline for UiPipeline {
                 VertexFormat::Float32x4,
                 // corner_radii
                 VertexFormat::Float32x4,
-                // border widths
-                VertexFormat::Float32x4,
-                // border color
-                VertexFormat::Float32x4,
+                // blur_radius
+                VertexFormat::Float32,
             ],
         );
 
@@ -110,13 +102,13 @@ impl SpecializedRenderPipeline for UiPipeline {
                 alpha_to_coverage_enabled: false,
             },
             layout,
-            label: Some("moon_ui_pipeline".into()),
+            label: Some("moon_ui_shadows_pipeline".into()),
             ..default()
         }
     }
 }
 
-pub fn init_ui_pipeline(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn init_shadows_pipeline(mut commands: Commands, asset_server: Res<AssetServer>) {
     let view_layout = BindGroupLayoutDescriptor::new(
         "moon_ui_view_layout",
         &BindGroupLayoutEntries::single(
@@ -125,20 +117,8 @@ pub fn init_ui_pipeline(mut commands: Commands, asset_server: Res<AssetServer>) 
         ),
     );
 
-    // let image_layout = BindGroupLayoutDescriptor::new(
-    //     "moon_ui_image_layout",
-    //     &BindGroupLayoutEntries::sequential(
-    //         ShaderStages::FRAGMENT,
-    //         (
-    //             texture_2d(TextureSampleType::Float { filterable: true }),
-    //             sampler(SamplerBindingType::Filtering),
-    //         ),
-    //     ),
-    // );
-
-    commands.insert_resource(UiPipeline {
+    commands.insert_resource(UiShadowsPipeline {
         view_layout,
-        // image_layout,
-        shader: load_embedded_asset!(asset_server.as_ref(), "../../shaders/primitive.wgsl"),
+        shader: load_embedded_asset!(asset_server.as_ref(), "../../shaders/shadows.wgsl"),
     });
 }
