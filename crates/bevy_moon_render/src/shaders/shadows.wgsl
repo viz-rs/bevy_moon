@@ -41,8 +41,8 @@ fn compute_erf7(v: vec2<f32>) -> vec2<f32> {
 fn blur_along_x(x: f32, y: f32, half_size: vec2<f32>, radius: f32, sigma: f32) -> f32 {
     let delta = min(half_size.y - radius - abs(y), 0.0);
     let curved = half_size.x - radius + sqrt(max(0.0, radius * radius - delta * delta));
-    let integral = 0.5 + 0.5 * erf((x + vec2(-curved, curved)) * (sqrt(0.5) / sigma));
-    // let integral = 0.5 + 0.5 * compute_erf7((x + vec2(-curved, curved)) * (sqrt(0.5) / sigma));
+    // let integral = 0.5 + 0.5 * erf((x + vec2(-curved, curved)) * (sqrt(0.5) / sigma));
+    let integral = 0.5 + 0.5 * compute_erf7((x + vec2(-curved, curved)) * (sqrt(0.5) / sigma));
     return integral.y - integral.x;
 }
 

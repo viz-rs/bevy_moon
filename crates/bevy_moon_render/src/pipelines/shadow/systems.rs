@@ -6,7 +6,7 @@ use bevy_ecs::{
     prelude::Res,
     system::{Query, ResMut},
 };
-use bevy_math::{Affine3A, Vec2};
+use bevy_math::Vec2;
 use bevy_moon_core::prelude::{ComputedLayout, Div, UiStackMap};
 use bevy_render::{Extract, sync_world::RenderEntity};
 use bevy_transform::components::GlobalTransform;
@@ -86,10 +86,7 @@ fn extract_single_div(
         let offset = shadow.offset * Vec2::new(1.0, -1.0);
         let blur_radius = shadow.blur_radius;
         let shadow_size = size - spread * 2.0;
-        // let bounds = shadow_size + Vec2::splat(blur_radius) * 6.0;
-        let position = (affine * Affine3A::from_translation(offset.extend(0.0)))
-            .translation
-            .to_vec3();
+        let position = affine.translation.to_vec3() + offset.extend(0.0);
 
         extracted_ui_instances.instances.push(ExtractedUiInstance {
             index,

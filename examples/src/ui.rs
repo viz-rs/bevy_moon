@@ -101,23 +101,11 @@ fn setup(
 
     commands.spawn((
         div()
-            .w(164.0)
-            .h(164.0)
-            .border(Rect {
-                top: LengthPercentage::length(1.0),
-                right: LengthPercentage::length(1.0),
-                bottom: LengthPercentage::length(1.0),
-                left: LengthPercentage::length(1.0),
-            })
-            .background(Color::srgb(0.21, 0.21, 0.21))
-            // .shadow_md()
-            .shadow(vec![BoxShadow {
-                color: Color::BLACK.with_alpha(0.8),
-                offset: Vec2::new(00.0, 20.0),
-                blur_radius: 10.0,
-                spread_radius: -15.0,
-            }])
-            .border_color(WHITE),
+            .w(96.0)
+            .h(96.0)
+            .background(WHITE)
+            .corner_radii(Corners::all(8.0))
+            .shadow_xl(),
         Transform::from_xyz(100.0, -100.0, 0.0),
     ));
 }

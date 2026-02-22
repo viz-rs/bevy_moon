@@ -255,119 +255,38 @@ impl Div {
         self
     }
 
-    /// Sets the box shadow of the element.
-    /// [Docs](https://tailwindcss.com/docs/box-shadow)
     pub fn shadow_2xs(mut self) -> Self {
-        self.box_shadow = Some(vec![BoxShadow {
-            color: BLACK.with_alpha(0.05).into(),
-            offset: Vec2::new(0.0, 1.0),
-            blur_radius: 0.0,
-            spread_radius: 0.0,
-        }]);
+        self.box_shadow = Some(vec![BoxShadow::XS2]);
         self
     }
 
-    /// Sets the box shadow of the element.
-    /// [Docs](https://tailwindcss.com/docs/box-shadow)
     pub fn shadow_xs(mut self) -> Self {
-        self.box_shadow = Some(vec![BoxShadow {
-            color: BLACK.with_alpha(0.05).into(),
-            offset: Vec2::new(0.0, 1.0),
-            blur_radius: 2.0,
-            spread_radius: 0.0,
-        }]);
+        self.box_shadow = Some(vec![BoxShadow::XS]);
         self
     }
 
-    /// Sets the box shadow of the element.
-    /// [Docs](https://tailwindcss.com/docs/box-shadow)
     pub fn shadow_sm(mut self) -> Self {
-        self.box_shadow = Some(vec![
-            BoxShadow {
-                color: BLACK.with_alpha(0.1).into(),
-                offset: Vec2::new(0.0, 1.0),
-                blur_radius: 3.0,
-                spread_radius: 0.0,
-            },
-            BoxShadow {
-                color: BLACK.with_alpha(0.1).into(),
-                offset: Vec2::new(0.0, 1.0),
-                blur_radius: 2.0,
-                spread_radius: -1.0,
-            },
-        ]);
+        self.box_shadow = Some(BoxShadow::SM.into());
         self
     }
 
-    /// Sets the box shadow of the element.
-    /// [Docs](https://tailwindcss.com/docs/box-shadow)
     pub fn shadow_md(mut self) -> Self {
-        self.box_shadow = Some(vec![
-            BoxShadow {
-                color: BLACK.with_alpha(0.1).into(),
-                offset: Vec2::new(0.0, 4.0),
-                blur_radius: 6.0,
-                spread_radius: -1.0,
-            },
-            BoxShadow {
-                color: BLACK.with_alpha(0.1).into(),
-                offset: Vec2::new(0.0, 20.0),
-                blur_radius: 4.0,
-                spread_radius: -2.0,
-            },
-        ]);
+        self.box_shadow = Some(BoxShadow::MD.into());
         self
     }
 
-    /// Sets the box shadow of the element.
-    /// [Docs](https://tailwindcss.com/docs/box-shadow)
     pub fn shadow_lg(mut self) -> Self {
-        self.box_shadow = Some(vec![
-            BoxShadow {
-                color: BLACK.with_alpha(0.1).into(),
-                offset: Vec2::new(0.0, 10.0),
-                blur_radius: 15.0,
-                spread_radius: -3.0,
-            },
-            BoxShadow {
-                color: BLACK.with_alpha(0.1).into(),
-                offset: Vec2::new(0.0, 4.0),
-                blur_radius: 6.0,
-                spread_radius: -4.0,
-            },
-        ]);
+        self.box_shadow = Some(BoxShadow::LG.into());
         self
     }
 
-    /// Sets the box shadow of the element.
-    /// [Docs](https://tailwindcss.com/docs/box-shadow)
     pub fn shadow_xl(mut self) -> Self {
-        self.box_shadow = Some(vec![
-            BoxShadow {
-                color: BLACK.with_alpha(0.1).into(),
-                offset: Vec2::new(0.0, 20.0),
-                blur_radius: 25.0,
-                spread_radius: -5.0,
-            },
-            BoxShadow {
-                color: BLACK.with_alpha(0.1).into(),
-                offset: Vec2::new(0.0, 8.0),
-                blur_radius: 10.0,
-                spread_radius: -6.0,
-            },
-        ]);
+        self.box_shadow = Some(BoxShadow::XL.into());
         self
     }
 
-    /// Sets the box shadow of the element.
-    /// [Docs](https://tailwindcss.com/docs/box-shadow)
     pub fn shadow_2xl(mut self) -> Self {
-        self.box_shadow = Some(vec![BoxShadow {
-            color: BLACK.with_alpha(0.25).into(),
-            offset: Vec2::new(0.0, 25.0),
-            blur_radius: 50.0,
-            spread_radius: -12.0,
-        }]);
+        self.box_shadow = Some(vec![BoxShadow::XL2]);
         self
     }
 }

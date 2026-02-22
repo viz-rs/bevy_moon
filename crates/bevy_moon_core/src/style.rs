@@ -105,3 +105,88 @@ pub struct BoxShadow {
     pub blur_radius: f32,
     pub spread_radius: f32,
 }
+
+/// Sets the box shadow of the element.
+/// [Docs](https://tailwindcss.com/docs/box-shadow)
+impl BoxShadow {
+    pub const XS2: Self = Self {
+        color: Color::srgba(0.0, 0.0, 0.0, 0.05),
+        offset: Vec2::new(0.0, 1.0),
+        blur_radius: 0.0,
+        spread_radius: 0.0,
+    };
+
+    pub const XS: Self = Self {
+        color: Color::srgba(0.0, 0.0, 0.0, 0.05),
+        offset: Vec2::new(0.0, 1.0),
+        blur_radius: 2.0,
+        spread_radius: 0.0,
+    };
+
+    pub const SM: [Self; 2] = [
+        Self {
+            color: Color::srgba(0.0, 0.0, 0.0, 0.1),
+            offset: Vec2::new(0.0, 1.0),
+            blur_radius: 3.0,
+            spread_radius: 0.0,
+        },
+        Self {
+            color: Color::srgba(0.0, 0.0, 0.0, 0.1),
+            offset: Vec2::new(0.0, 1.0),
+            blur_radius: 2.0,
+            spread_radius: -1.0,
+        },
+    ];
+
+    pub const MD: [Self; 2] = [
+        Self {
+            color: Color::srgba(0.0, 0.0, 0.0, 0.1),
+            offset: Vec2::new(0.0, 4.0),
+            blur_radius: 6.0,
+            spread_radius: -1.0,
+        },
+        Self {
+            color: Color::srgba(0.0, 0.0, 0.0, 0.1),
+            offset: Vec2::new(0.0, 2.0),
+            blur_radius: 4.0,
+            spread_radius: -2.0,
+        },
+    ];
+
+    pub const LG: [Self; 2] = [
+        Self {
+            color: Color::srgba(0.0, 0.0, 0.0, 0.1),
+            offset: Vec2::new(0.0, 10.0),
+            blur_radius: 15.0,
+            spread_radius: -3.0,
+        },
+        Self {
+            color: Color::srgba(0.0, 0.0, 0.0, 0.1),
+            offset: Vec2::new(0.0, 4.0),
+            blur_radius: 6.0,
+            spread_radius: -4.0,
+        },
+    ];
+
+    pub const XL: [Self; 2] = [
+        Self {
+            color: Color::srgba(0.0, 0.0, 0.0, 0.1),
+            offset: Vec2::new(0.0, 20.0),
+            blur_radius: 25.0,
+            spread_radius: -5.0,
+        },
+        Self {
+            color: Color::srgba(0.0, 0.0, 0.0, 0.1),
+            offset: Vec2::new(0.0, 8.0),
+            blur_radius: 10.0,
+            spread_radius: -6.0,
+        },
+    ];
+
+    pub const XL2: Self = Self {
+        color: Color::srgba(0.0, 0.0, 0.0, 0.25),
+        offset: Vec2::new(0.0, 25.0),
+        blur_radius: 50.0,
+        spread_radius: -12.0,
+    };
+}
