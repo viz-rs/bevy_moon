@@ -5,7 +5,7 @@ use bevy_math::FloatOrd;
 use bevy_render::{
     render_phase::{
         CachedRenderPipelinePhaseItem, DrawFunctionId, PhaseItem, PhaseItemExtraIndex,
-        SortedPhaseItem,
+        SortedPhaseItem, ViewSortedRenderPhases,
     },
     render_resource::CachedRenderPipelineId,
     sync_world::MainEntity,
@@ -92,5 +92,17 @@ impl CachedRenderPipelinePhaseItem for TransparentUi {
     #[inline]
     fn cached_pipeline(&self) -> CachedRenderPipelineId {
         self.pipeline
+    }
+}
+
+pub trait PipelineFilter {
+    fn filter(&mut self, key: TypeId) -> impl Iterator<Item = &mut TransparentUi>;
+}
+
+impl PipelineFilter for ViewSortedRenderPhases<TransparentUi> {
+    fn filter(&mut self, key: TypeId) -> impl Iterator<Item = &mut TransparentUi> {
+        self.values_mut()
+            .flat_map(move |phase| phase.items.iter_mut().filter(move |item| item.is(key)))
+            .into_iter()
     }
 }

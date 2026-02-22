@@ -14,7 +14,7 @@ use bevy_render::{
 };
 
 use crate::{
-    transparent::TransparentUi,
+    transparent::{PipelineFilter, TransparentUi},
     view::{MoonUiCameraView, MoonUiOptions, MoonUiViewTarget},
 };
 
@@ -122,33 +122,27 @@ pub fn prepare_shadows(
 
     let mut batches: EntityHashMap<UiShadowsBatch> = EntityHashMap::with_capacity(*previous_len);
 
-    for transparent_phase in render_phases.values_mut() {
-        for item in &mut transparent_phase
-            .items
-            .iter_mut()
-            .filter(|item| item.is(UI_SHADOWS_PIPELINE_KEY))
-        {
-            let Some(extracted_ui_instance) = extracted_ui_instances
-                .instances
-                .get(item.extracted_index)
-                .filter(|extracted_ui_instance| extracted_ui_instance.entity.0 == item.entity())
-            else {
-                continue;
-            };
+    for item in render_phases.filter(UI_SHADOWS_PIPELINE_KEY) {
+        let Some(extracted_ui_instance) = extracted_ui_instances
+            .instances
+            .get(item.extracted_index)
+            .filter(|extracted_ui_instance| extracted_ui_instance.entity.0 == item.entity())
+        else {
+            continue;
+        };
 
-            let instance = extracted_ui_instance.instance;
+        let instance = extracted_ui_instance.instance;
 
-            let index = ui_meta.instance_buffer.push(instance) as u32;
+        let index = ui_meta.instance_buffer.push(instance) as u32;
 
-            batches
-                .entry(item.entity())
-                .and_modify(|batch| {
-                    batch.range.end = index + 1;
-                })
-                .or_insert_with(|| UiShadowsBatch::new(index..index + 1));
+        batches
+            .entry(item.entity())
+            .and_modify(|batch| {
+                batch.range.end = index + 1;
+            })
+            .or_insert_with(|| UiShadowsBatch::new(index..index + 1));
 
-            item.batch_range_mut().end += 1;
-        }
+        item.batch_range_mut().end += 1;
     }
 
     ui_meta

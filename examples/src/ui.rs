@@ -56,48 +56,48 @@ fn setup(
     //     ),],
     // ));
 
-    // commands.spawn((
-    //     div()
-    //         .w(100.0)
-    //         .h(100.0)
-    //         .background(GREEN)
-    //         .corner_radii(Corners {
-    //             top_left: 5.0,
-    //             top_right: 15.0,
-    //             bottom_right: 25.0,
-    //             bottom_left: 35.0,
-    //         })
-    //         .border(Rect {
-    //             top: LengthPercentage::length(5.0),
-    //             right: LengthPercentage::length(10.0),
-    //             bottom: LengthPercentage::length(15.0),
-    //             left: LengthPercentage::length(20.0),
-    //         })
-    //         .border_color(RED)
-    //         .shadow_2xl(),
-    //     Transform::from_xyz(100.0, 0.0, 0.0),
-    // ));
+    commands.spawn((
+        div()
+            .w(100.0)
+            .h(100.0)
+            .background(GREEN)
+            .corner_radii(Corners {
+                top_left: 5.0,
+                top_right: 15.0,
+                bottom_right: 25.0,
+                bottom_left: 35.0,
+            })
+            .border(Rect {
+                top: LengthPercentage::length(5.0),
+                right: LengthPercentage::length(10.0),
+                bottom: LengthPercentage::length(15.0),
+                left: LengthPercentage::length(20.0),
+            })
+            .border_color(WHITE)
+            .shadow_sm(),
+        Transform::from_xyz(100.0, 0.0, 0.0),
+    ));
 
-    // commands.spawn((
-    //     div()
-    //         .w(75.0)
-    //         .h(75.0)
-    //         .background(GREEN)
-    //         .border(Rect {
-    //             top: LengthPercentage::length(0.0),
-    //             right: LengthPercentage::length(0.0),
-    //             bottom: LengthPercentage::length(0.0),
-    //             left: LengthPercentage::length(0.0),
-    //         })
-    //         .border_color(BLACK)
-    //         .corner_radii(Corners::all(10.0))
-    //         .shadow_xl(),
-    //     Transform::from_xyz(187.5, 0.0, 0.0),
-    //     children![(
-    //         div().w(50.0).h(50.0).background(BLUE),
-    //         Transform::from_xyz(10.0, -10.0, 0.0),
-    //     )],
-    // ));
+    commands.spawn((
+        div()
+            .w(75.0)
+            .h(75.0)
+            .background(GREEN)
+            .border(Rect {
+                top: LengthPercentage::length(1.0),
+                right: LengthPercentage::length(1.0),
+                bottom: LengthPercentage::length(1.0),
+                left: LengthPercentage::length(1.0),
+            })
+            .border_color(WHITE)
+            .corner_radii(Corners::all(10.0))
+            .shadow_sm(),
+        Transform::from_xyz(187.5, 0.0, 0.0),
+        children![(
+            div().w(50.0).h(50.0).background(BLUE),
+            Transform::from_xyz(10.0, -10.0, 0.0),
+        )],
+    ));
 
     commands.spawn((
         div()
@@ -105,7 +105,7 @@ fn setup(
             .h(96.0)
             .background(WHITE)
             .corner_radii(Corners::all(8.0))
-            .shadow_xl(),
+            .shadow_sm(),
         Transform::from_xyz(100.0, -100.0, 0.0),
     ));
 }

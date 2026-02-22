@@ -54,9 +54,7 @@ impl<P: PhaseItem> RenderCommand<P> for DrawShadow {
             return RenderCommandResult::Skip;
         };
 
-        let UiShadowsMeta {
-            instance_buffer, ..
-        } = ui_meta.into_inner();
+        let UiShadowsMeta { instance_buffer } = ui_meta.into_inner();
 
         let Some(instances) = instance_buffer.buffer() else {
             return RenderCommandResult::Failure("missing vertices to draw box shadows");

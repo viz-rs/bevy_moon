@@ -84,9 +84,7 @@ impl<P: PhaseItem> RenderCommand<P> for DrawUiDivBatch {
             return RenderCommandResult::Skip;
         };
 
-        let UiInstancesMeta {
-            instance_buffer, ..
-        } = ui_meta.into_inner();
+        let UiInstancesMeta { instance_buffer } = ui_meta.into_inner();
 
         let Some(instances) = instance_buffer.buffer() else {
             return RenderCommandResult::Failure("missing vertices to draw ui");
