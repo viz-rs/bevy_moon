@@ -109,19 +109,19 @@ pub struct BoxShadow {
 /// Sets the box shadow of the element.
 /// [Docs](https://tailwindcss.com/docs/box-shadow)
 impl BoxShadow {
-    pub const XS2: Self = Self {
+    pub const XS2: [Self; 1] = [Self {
         color: Color::srgba(0.0, 0.0, 0.0, 0.05),
         offset: Vec2::new(0.0, 1.0),
         blur_radius: 0.0,
         spread_radius: 0.0,
-    };
+    }];
 
-    pub const XS: Self = Self {
+    pub const XS: [Self; 1] = [Self {
         color: Color::srgba(0.0, 0.0, 0.0, 0.05),
         offset: Vec2::new(0.0, 1.0),
         blur_radius: 2.0,
         spread_radius: 0.0,
-    };
+    }];
 
     pub const SM: [Self; 2] = [
         Self {
@@ -183,10 +183,10 @@ impl BoxShadow {
         },
     ];
 
-    pub const XL2: Self = Self {
+    pub const XL2: [Self; 1] = [Self {
         color: Color::srgba(0.0, 0.0, 0.0, 0.25),
         offset: Vec2::new(0.0, 25.0),
         blur_radius: 50.0,
         spread_radius: -12.0,
-    };
+    }];
 }

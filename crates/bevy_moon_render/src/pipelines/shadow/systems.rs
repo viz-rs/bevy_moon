@@ -1,6 +1,6 @@
 use bevy_asset::AssetId;
 use bevy_camera::visibility::InheritedVisibility;
-use bevy_color::{Alpha, ColorToComponents, LinearRgba};
+use bevy_color::{Alpha, ColorToComponents};
 use bevy_ecs::{
     entity::Entity,
     prelude::Res,
@@ -67,7 +67,7 @@ fn extract_single_div(
         return;
     }
 
-    let index = div.stack_index as f32;
+    let index = div.stack_index as f32 - 0.1;
     let main_entity = entity.into();
     let affine = transform.affine();
     let size = computed_layout.size;
@@ -87,13 +87,13 @@ fn extract_single_div(
         let position = affine.translation.to_vec3() + offset.extend(0.0);
 
         let blur_radius = shadow.blur_radius;
-        let color = LinearRgba::from(shadow.color).to_f32_array();
+        let color = shadow.color.to_linear().to_f32_array();
 
         extracted_ui_instances.instances.push(ExtractedUiInstance {
             index,
             camera_entity,
             entity: (render_entity, main_entity),
-            image: AssetId::default(),
+            texture: AssetId::default(),
 
             instance: UiShadow {
                 color,

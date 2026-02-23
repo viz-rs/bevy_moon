@@ -10,7 +10,7 @@ mod systems;
 
 pub mod plugin;
 
-pub(self) type UiShadowsMeta = UiMeta<UiShadow>;
-pub(self) type UiShadowsBatch = UiBatch<UiShadow>;
-pub(self) type UiShadowsViewBindGroup = UiViewBindGroup<UiShadowsPipeline>;
+pub(self) type UiShadowMeta = UiMeta<UiShadow>;
+pub(self) type UiShadowBatch = UiBatch<UiShadow>;
+pub(self) type UiShadowViewBindGroup = UiViewBindGroup<UiShadowsPipeline>;
 pub(self) type ExtractedUiShadows = ExtractedUiInstances<UiShadow>;

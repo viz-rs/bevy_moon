@@ -9,7 +9,7 @@ use bevy_render::{
 use crate::{prelude::ExtractUiSystems, transparent::TransparentUi};
 
 use super::{
-    ExtractedUiShadows, UiShadowsMeta,
+    ExtractedUiShadows, UiShadowMeta,
     draw::DrawShadows,
     pipeline::{UiShadowsPipeline, init_shadows_pipeline},
     render::{prepare_div_view_bind_groups, prepare_shadows, queue_shadows},
@@ -28,7 +28,7 @@ impl Plugin for MoonShadowRenderPlugin {
 
         render_app
             .add_render_command::<TransparentUi, DrawShadows>()
-            .init_resource::<UiShadowsMeta>()
+            .init_resource::<UiShadowMeta>()
             .init_resource::<ExtractedUiShadows>()
             .init_resource::<SpecializedRenderPipelines<UiShadowsPipeline>>()
             .add_systems(RenderStartup, init_shadows_pipeline)

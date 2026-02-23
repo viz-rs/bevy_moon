@@ -1,6 +1,5 @@
-use bevy_color::{Alpha, Color, palettes::css::BLACK};
+use bevy_color::Color;
 use bevy_ecs::{component::Component, prelude::ReflectComponent};
-use bevy_math::Vec2;
 use bevy_reflect::{Reflect, prelude::ReflectDefault};
 use bevy_transform::components::Transform;
 use taffy::*;
@@ -256,12 +255,12 @@ impl Div {
     }
 
     pub fn shadow_2xs(mut self) -> Self {
-        self.box_shadow = Some(vec![BoxShadow::XS2]);
+        self.box_shadow = Some(BoxShadow::XS2.into());
         self
     }
 
     pub fn shadow_xs(mut self) -> Self {
-        self.box_shadow = Some(vec![BoxShadow::XS]);
+        self.box_shadow = Some(BoxShadow::XS.into());
         self
     }
 
@@ -286,7 +285,7 @@ impl Div {
     }
 
     pub fn shadow_2xl(mut self) -> Self {
-        self.box_shadow = Some(vec![BoxShadow::XL2]);
+        self.box_shadow = Some(BoxShadow::XL2.into());
         self
     }
 }

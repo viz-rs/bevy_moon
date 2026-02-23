@@ -12,8 +12,8 @@ fn get_vertex_by_index(index: u32) -> vec2<f32> {
 
 fn get_corner_index(point: vec2<f32>) -> u32 {
     let s = sign(point);
-    let c = select(0u, 1u, s.x == s.y);
-    let r = select(2u, 0u, s.y == 1.0);
+    let c = select(0u, 1u, s.x == s.y); // column
+    let r = select(2u, 0u, s.y == 1.0); // row
     return c + r;
 }
 
@@ -25,7 +25,14 @@ fn is_xyzw_zero(v: vec4<f32>) -> bool {
     return all(v == vec4(0.0));
 }
 
-fn antialias_f(d: f32) -> f32 {
+// Anti-aliasing function by `clamp`
+fn aa_c(d: f32) -> f32 {
+    let t = d / AA_T / 0.5;
+    return clamp(0.5 - t, 0.0, 1.0);
+}
+
+// Anti-aliasing function by `fwidth`
+fn aa_f(d: f32) -> f32 {
     // length(vec2(dpdx(d), dpdy(d))) - fwidth(d) < 0.001;
     // let ps = length(vec2(dpdx(d), dpdy(d))); // pixel size
     let ps = fwidth(d); // pixel size
@@ -33,12 +40,12 @@ fn antialias_f(d: f32) -> f32 {
     return 1.0 - d / (ps + 0.001);
 }
 
-fn antialias_c(d: f32) -> f32 {
-    let t = d / AA_T / 0.5;
-    return clamp(0.5 - t, 0.0, 1.0);
-}
-
-fn antialias_s(d: f32) -> f32 {
+// Anti-aliasing function by `smoothstep`
+fn aa_s(d: f32) -> f32 {
     let t = d / AA_T / 0.5;
     return smoothstep(0.0, 1.0, 0.5 - t);
+}
+
+fn enabled(flags: u32, mask: u32) -> bool {
+    return (flags & mask) != 0u;
 }

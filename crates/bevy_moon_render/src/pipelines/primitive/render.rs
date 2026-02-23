@@ -1,5 +1,4 @@
-use bevy_asset::AssetId;
-use bevy_color::ColorToComponents;
+use bevy_asset::{AssetEvent, AssetId};
 use bevy_ecs::{
     entity::{Entity, EntityHashMap},
     query::With,
@@ -16,15 +15,16 @@ use bevy_render::{
     texture::GpuImage,
     view::{ExtractedView, ViewUniforms},
 };
-use smallvec::SmallVec;
+use bevy_sprite_render::SpriteAssetEvents;
 
 use crate::{
+    pipelines::UiTextureBindGroups,
     transparent::{RenderPhasesFilter, TransparentUi},
     view::{MoonUiCameraView, MoonUiOptions, MoonUiViewTarget},
 };
 
 use super::{
-    ExtractedUiInstances, UiInstancesBatch, UiInstancesMeta, UiInstancesViewBindGroup,
+    ExtractedUiInstances, UiInstanceBatch, UiInstanceMeta, UiInstanceViewBindGroup,
     draw::DrawUi,
     pipeline::{UI_PIPELINE_KEY, UiPipeline, UiPipelineKey},
 };
@@ -111,7 +111,7 @@ pub fn prepare_div_view_bind_groups(
 
         commands
             .entity(entity)
-            .insert(UiInstancesViewBindGroup::new(value));
+            .insert(UiInstanceViewBindGroup::new(value));
     }
 }
 
@@ -120,19 +120,31 @@ pub fn prepare_divs(
     render_queue: Res<RenderQueue>,
     pipeline_cache: Res<PipelineCache>,
     ui_pipeline: Res<UiPipeline>,
-    // gpu_images: Res<RenderAssets<GpuImage>>,
-    // events: Res<SpriteAssetEvents>,
+    gpu_images: Res<RenderAssets<GpuImage>>,
+    events: Res<SpriteAssetEvents>,
     mut commands: Commands,
-    mut ui_meta: ResMut<UiInstancesMeta>,
+    mut ui_meta: ResMut<UiInstanceMeta>,
     mut extracted_ui_instances: ResMut<ExtractedUiInstances>,
-    // mut image_bind_groups: ResMut<ImageNodeBindGroups>,
+    mut texture_bind_groups: ResMut<UiTextureBindGroups>,
     mut render_phases: ResMut<ViewSortedRenderPhases<TransparentUi>>,
-    mut ui_stack_map: ResMut<UiStackMap>,
     mut previous_len: Local<usize>,
 ) {
+    // If an image has changed, the GpuImage has (probably) changed
+    for event in &events.images {
+        match event {
+          AssetEvent::Added { .. } |
+          AssetEvent::Unused { .. } |
+          // Images don't have dependencies
+          AssetEvent::LoadedWithDependencies { .. } => {}
+          AssetEvent::Modified { id } | AssetEvent::Removed { id } => {
+              texture_bind_groups.values.remove(id);
+          }
+      };
+    }
+
     ui_meta.instance_buffer.clear();
 
-    let mut batches: EntityHashMap<UiInstancesBatch> = EntityHashMap::with_capacity(*previous_len);
+    let mut batches: EntityHashMap<UiInstanceBatch> = EntityHashMap::with_capacity(*previous_len);
 
     for item in render_phases.filter(UI_PIPELINE_KEY) {
         let Some(extracted_ui_instance) = extracted_ui_instances
@@ -143,16 +155,37 @@ pub fn prepare_divs(
             continue;
         };
 
+        let texture = extracted_ui_instance.texture;
+
+        let Some(gpu_image) = (texture != AssetId::invalid())
+            .then(|| gpu_images.get(texture))
+            .flatten()
+        else {
+            continue;
+        };
+
         let instance = extracted_ui_instance.instance;
 
         let index = ui_meta.instance_buffer.push(instance) as u32;
+
+        texture_bind_groups
+            .values
+            .entry(texture)
+            .or_insert_with(|| {
+                render_device.create_bind_group(
+                    "ui_texture_bind_group",
+                    &pipeline_cache.get_bind_group_layout(&ui_pipeline.texture_layout),
+                    &BindGroupEntries::sequential((&gpu_image.texture_view, &gpu_image.sampler)),
+                )
+            });
 
         batches
             .entry(item.entity())
             .and_modify(|batch| {
                 batch.range.end = index + 1;
+                batch.texture = texture; // updates it with real texture
             })
-            .or_insert_with(|| UiInstancesBatch::new(index..index + 1));
+            .or_insert_with(|| UiInstanceBatch::new(index..index + 1).with_texture(texture));
 
         item.batch_range_mut().end += 1;
     }

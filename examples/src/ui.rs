@@ -4,13 +4,14 @@ use bevy::{
     prelude::*,
 };
 
-use bevy_moon::prelude::{BoxShadow, Corners, MoonPlugin, div};
+use bevy_moon::prelude::{BoxShadow, Corners, MoonPlugin, div, image};
 use taffy::{LengthPercentage, Rect};
 
 fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    asset_server: Res<AssetServer>,
 ) {
     commands.spawn((Camera2d, PanCamera::default()));
 
@@ -97,6 +98,28 @@ fn setup(
             div().w(50.0).h(50.0).background(BLUE),
             Transform::from_xyz(10.0, -10.0, 0.0),
         )],
+    ));
+
+    commands.spawn((
+        div()
+            .w(128.0)
+            .h(128.0)
+            // .flex()
+            .border(Rect {
+                top: LengthPercentage::length(2.0),
+                right: LengthPercentage::length(2.0),
+                bottom: LengthPercentage::length(2.0),
+                left: LengthPercentage::length(2.0),
+            })
+            .border_color(RED)
+            .background(WHITE)
+            .corner_radii(Corners::all(12.0))
+            .shadow_md(),
+        // children![(
+        // div().flex().flex_auto(),
+        image(asset_server.load("images/bevy.png")),
+        // )],
+        Transform::from_xyz(-150.0, -150.0, 0.0),
     ));
 
     commands.spawn((

@@ -19,7 +19,7 @@ use crate::{
 };
 
 use super::{
-    ExtractedUiShadows, UiShadowsBatch, UiShadowsMeta, UiShadowsViewBindGroup,
+    ExtractedUiShadows, UiShadowBatch, UiShadowMeta, UiShadowViewBindGroup,
     draw::DrawShadows,
     pipeline::{UI_SHADOWS_PIPELINE_KEY, UiShadowsPipeline, UiShadowsPipelineKey},
 };
@@ -68,7 +68,7 @@ pub fn queue_shadows(
         }
 
         let entity = div.entity;
-        let sort_key = FloatOrd(div.index - 0.001);
+        let sort_key = FloatOrd(div.index);
 
         render_phase.add(TransparentUi {
             pipeline,
@@ -105,7 +105,7 @@ pub fn prepare_div_view_bind_groups(
 
         commands
             .entity(entity)
-            .insert(UiShadowsViewBindGroup::new(value));
+            .insert(UiShadowViewBindGroup::new(value));
     }
 }
 
@@ -113,14 +113,14 @@ pub fn prepare_shadows(
     render_device: Res<RenderDevice>,
     render_queue: Res<RenderQueue>,
     mut commands: Commands,
-    mut ui_meta: ResMut<UiShadowsMeta>,
+    mut ui_meta: ResMut<UiShadowMeta>,
     mut extracted_ui_instances: ResMut<ExtractedUiShadows>,
     mut render_phases: ResMut<ViewSortedRenderPhases<TransparentUi>>,
     mut previous_len: Local<usize>,
 ) {
     ui_meta.instance_buffer.clear();
 
-    let mut batches: EntityHashMap<UiShadowsBatch> = EntityHashMap::with_capacity(*previous_len);
+    let mut batches: EntityHashMap<UiShadowBatch> = EntityHashMap::with_capacity(*previous_len);
 
     for item in render_phases.filter(UI_SHADOWS_PIPELINE_KEY) {
         let Some(extracted_ui_instance) = extracted_ui_instances
@@ -140,7 +140,7 @@ pub fn prepare_shadows(
             .and_modify(|batch| {
                 batch.range.end = index + 1;
             })
-            .or_insert_with(|| UiShadowsBatch::new(index..index + 1));
+            .or_insert_with(|| UiShadowBatch::new(index..index + 1));
 
         item.batch_range_mut().end += 1;
     }

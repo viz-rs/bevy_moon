@@ -12,15 +12,15 @@ use bevy_render::{
     view::ViewUniformOffset,
 };
 
-use super::{UiShadowsBatch, UiShadowsMeta, UiShadowsViewBindGroup};
+use super::{UiShadowBatch, UiShadowMeta, UiShadowViewBindGroup};
 
 pub type DrawShadows = (SetItemPipeline, SetShadowViewBindGroup<0>, DrawShadow);
 
 pub struct SetShadowViewBindGroup<const I: usize>;
 
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetShadowViewBindGroup<I> {
-    type Param = SRes<UiShadowsMeta>;
-    type ViewQuery = (Read<ViewUniformOffset>, Read<UiShadowsViewBindGroup>);
+    type Param = SRes<UiShadowMeta>;
+    type ViewQuery = (Read<ViewUniformOffset>, Read<UiShadowViewBindGroup>);
     type ItemQuery = ();
 
     fn render<'w>(
@@ -38,9 +38,9 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetShadowViewBindGroup<I
 pub struct DrawShadow;
 
 impl<P: PhaseItem> RenderCommand<P> for DrawShadow {
-    type Param = SRes<UiShadowsMeta>;
+    type Param = SRes<UiShadowMeta>;
     type ViewQuery = ();
-    type ItemQuery = Read<UiShadowsBatch>;
+    type ItemQuery = Read<UiShadowBatch>;
 
     #[inline]
     fn render<'w>(
@@ -54,7 +54,7 @@ impl<P: PhaseItem> RenderCommand<P> for DrawShadow {
             return RenderCommandResult::Skip;
         };
 
-        let UiShadowsMeta { instance_buffer } = ui_meta.into_inner();
+        let UiShadowMeta { instance_buffer } = ui_meta.into_inner();
 
         let Some(instances) = instance_buffer.buffer() else {
             return RenderCommandResult::Failure("missing vertices to draw box shadows");
