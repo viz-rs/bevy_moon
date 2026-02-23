@@ -1,4 +1,5 @@
 #import bevy_render::view::View
+#import bevy_moon::flags::{TEXTURED}
 #import bevy_moon::utils::{enabled, is_xyzw_zero}
 #import bevy_moon::utils::{normalize_vertex_index, get_vertex_by_index}
 #import bevy_moon::utils::{get_corner_index, get_inset_by_index}
@@ -66,7 +67,7 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     var color = select(
         in.color,
         in.color * textureSample(sprite_texture, sprite_sampler, in.uv),
-        enabled(in.flags, 1u)
+        enabled(in.flags, TEXTURED)
     );
     
     let corner_radii = in.corner_radii;
