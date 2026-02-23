@@ -45,7 +45,3 @@ fn aa_s(d: f32) -> f32 {
     let t = d / AA_T / 0.5;
     return smoothstep(0.0, 1.0, 0.5 - t);
 }
-
-fn enabled(flags: u32, mask: u32) -> bool {
-    return (flags & mask) != 0u;
-}

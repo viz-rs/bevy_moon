@@ -1,6 +1,6 @@
 #import bevy_render::view::View
-#import bevy_moon::flags::{TEXTURED}
-#import bevy_moon::utils::{enabled, is_xyzw_zero}
+#import bevy_moon::flags::{TEXTURED, enabled}
+#import bevy_moon::utils::{is_xyzw_zero}
 #import bevy_moon::utils::{normalize_vertex_index, get_vertex_by_index}
 #import bevy_moon::utils::{get_corner_index, get_inset_by_index}
 #import bevy_moon::utils::{aa_c, aa_f, aa_s}
