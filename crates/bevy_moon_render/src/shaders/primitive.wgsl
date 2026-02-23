@@ -119,13 +119,13 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     // let a = 1.0 - smoothstep(-0.75, -0.1, external_distance);
     // let b = 1.0 - smoothstep(-0.1, 0.55, external_distance); // +0.65
     
-    let c = antialias_f(external_distance);
+    // let c = antialias_f(external_distance);
     // let d = antialias_c(external_distance);
-    // let e = antialias_s(external_distance);
+    let e = antialias_s(external_distance);
     
     // color.a *= a; // The original is just multiplied by a.
     // color.a *= mix(a, b, b); // Repair the blank gap caused by antiasing.
-    color.a *= c; // Repair the blank gap caused by antiasing.
+    color.a *= e; // Repair the blank gap caused by antiasing.
 
     return color;
 }

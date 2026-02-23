@@ -17,6 +17,7 @@ pub struct MoonRenderPlugin;
 
 impl Plugin for MoonRenderPlugin {
     fn build(&self, app: &mut bevy_app::App) {
+        load_shader_library!(app, "shaders/prelude.wgsl");
         load_shader_library!(app, "shaders/corners.wgsl");
         load_shader_library!(app, "shaders/rectangles.wgsl");
         load_shader_library!(app, "shaders/utils.wgsl");

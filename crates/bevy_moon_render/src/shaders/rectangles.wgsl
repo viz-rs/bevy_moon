@@ -1,5 +1,6 @@
 #define_import_path bevy_moon::rectangles
 
+#import bevy_moon::prelude::{SQRT_HALF}
 #import bevy_moon::corners::{sd_corner}
 
 fn sd_rounded_box(point: vec2<f32>, half_size: vec2<f32>, radius: f32) -> f32 {
@@ -23,7 +24,7 @@ fn sd_rounded_box(point: vec2<f32>, half_size: vec2<f32>, radius: f32) -> f32 {
     let d = sd_corner(uv, 0u);
     
     // undo scale and return
-    return d * radius * sqrt(0.5);
+    return d * radius * SQRT_HALF;
 }
 
 fn sd_inset_rounded_box(point: vec2<f32>, half_size: vec2<f32>, radius: f32, tl: vec2<f32>, br: vec2<f32>, cb: vec2<f32>) -> f32 {

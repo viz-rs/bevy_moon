@@ -1,8 +1,7 @@
-#import bevy_render::maths::PI
 #import bevy_render::view::View
+#import bevy_moon::prelude::{FRAC_2_SQRT_PI, INVERT_SQRT_2, SQRT_PI_2}
 #import bevy_moon::utils::{normalize_vertex_index, get_vertex_by_index}
 #import bevy_moon::utils::{get_corner_index, get_inset_by_index}
-#import bevy_moon::utils::{FRAC_2_SQRT_PI, INVERT_SQRT_2}
 #import bevy_moon::rectangles::{sd_rounded_box}
 
 @group(0) @binding(0) var<uniform> view: View;
@@ -13,7 +12,7 @@ const SAMPLES: i32 = max(4, #SHADOW_SAMPLES);
 // 
 // <https://en.wikipedia.org/wiki/Gaussian_function>
 fn gaussian(x: f32, sigma: f32) -> f32 {
-    return exp(-(x * x) / (2.0 * sigma * sigma)) / (sqrt(2.0 * PI) * sigma);
+    return exp(-(x * x) / (2.0 * sigma * sigma)) / (SQRT_PI_2 * sigma);
 }
 
 // This approximates the error function, needed for the gaussian integral
@@ -87,7 +86,7 @@ fn blur7(point: vec2<f32>, half_size: vec2<f32>, radius: f32, sigma: f32) -> f32
     
     let v = INVERT_SQRT_2 / sigma;
     let d = sd_rounded_box(point, half_size, radius);
-    let ranged = d + vec2(0.0, select(0.5, radius, radius > 0.0) * step);
+    let ranged = d + vec2(0.0, select(radius, 0.5, radius == 0.0) * step);
     let integral = 0.5 * erf7(ranged * v);
     return integral.y - integral.x;
 }

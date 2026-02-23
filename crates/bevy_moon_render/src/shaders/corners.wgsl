@@ -5,7 +5,8 @@
 
 #define_import_path bevy_moon::corners
 
-#import bevy_render::maths::PI_2
+#import bevy_render::maths::{HALF_PI}
+#import bevy_moon::prelude::{INVERT_HALF_PI, SQRT_2}
 
 // Selects a corner shape by a kind
 //
@@ -21,7 +22,7 @@ fn sd_corner(uv: vec2<f32>, kind: u32) -> f32 {
 
 // Traditional Circle rounded box
 fn sd_corner_circle(uv: vec2<f32>) -> f32 {
-    return length(uv - vec2(0.0, -1.0)) - sqrt(2.0);
+    return length(uv + vec2(0.0, 1.0)) - SQRT_2;
 }
 
 // New Parabolic rounded box
@@ -41,7 +42,7 @@ fn sd_corner_parabola(uv: vec2<f32>) -> f32 {
 // <https://www.shadertoy.com/view/3t23WG>
 fn sd_corner_cosine(uv: vec2<f32>) -> f32 {
     var ta = 0.0; 
-    var tb = PI_2 / 4.0;
+    var tb = HALF_PI;
     let p = uv * tb;
 
     for (var i = 0; i < 8; i++ ) {
@@ -59,7 +60,7 @@ fn sd_corner_cosine(uv: vec2<f32>) -> f32 {
     let pa = p - qa;
     let di = qb - qa;
     let h = clamp(dot(pa, di) / dot(di, di), 0.0, 1.0);
-    return length(pa - di * h) * sign(pa.y * di.x - pa.x * di.y) * (4.0 / PI_2);
+    return length(pa - di * h) * sign(pa.y * di.x - pa.x * di.y) * INVERT_HALF_PI;
 }
 
 // New Cubic rounded box
