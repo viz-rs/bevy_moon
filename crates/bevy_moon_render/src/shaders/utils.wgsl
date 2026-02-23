@@ -1,6 +1,18 @@
 #define_import_path bevy_moon::utils
 
-const antialias_threshold: f32 = 0.5;
+#import bevy_render::maths::PI
+
+// AntiAlias Threshold
+const AA_T: f32 = 0.5;
+
+ // 1.414213562373095
+const SQRT_2: f32 = sqrt(2.0);
+
+// 0.7071067811865476
+const INVERT_SQRT_2: f32 = 1.0 / SQRT_2;
+
+ // 1.1283791670955126
+const FRAC_2_SQRT_PI: f32 = 2.0 / sqrt(PI);
 
 // const quad_vertices: array<vec2<f32>, 6> = array(
 //     vec2(-0.5, -0.5), // 0 - BottomLeft
@@ -27,15 +39,9 @@ fn get_vertex_by_index(index: u32) -> vec2<f32> {
 
 fn get_corner_index(point: vec2<f32>) -> u32 {
     let s = sign(point);
-    // normalize to [0,1]
-    let uv = vec2<u32>((s + 1.0) / 2.0);
-    var i = uv.x + uv.y * 2;
-    // top: i ^ 2, bottom: i ^ 3
-    i ^= 2;
-    if uv.y == 0 {
-        i ^= 1;
-    }
-    return i;
+    let c = select(0u, 1u, s.x == s.y);
+    let r = select(2u, 0u, s.y == 1.0);
+    return c + r;
 }
 
 fn get_inset_by_index(insets: vec4<f32>, index: u32) -> vec2<f32> {
@@ -44,4 +50,22 @@ fn get_inset_by_index(insets: vec4<f32>, index: u32) -> vec2<f32> {
 
 fn is_xyzw_zero(v: vec4<f32>) -> bool {
     return all(v == vec4(0.0));
+}
+
+fn antialias_f(d: f32) -> f32 {
+    // length(vec2(dpdx(d), dpdy(d))) - fwidth(d) < 0.001;
+    // let ps = length(vec2(dpdx(d), dpdy(d))); // pixel size
+    let ps = fwidth(d); // pixel size
+    let t = ps * SQRT_2;
+    return 1.0 - d / (ps + 0.001);
+}
+
+fn antialias_c(d: f32) -> f32 {
+    let t = d / AA_T / 0.5;
+    return clamp(0.5 - t, 0.0, 1.0);
+}
+
+fn antialias_s(d: f32) -> f32 {
+    let t = d / AA_T / 0.5;
+    return smoothstep(0.0, 1.0, 0.5 - t);
 }

@@ -6,7 +6,7 @@ use bevy_ecs::{
     prelude::Res,
     system::{Query, ResMut},
 };
-use bevy_math::Vec2;
+use bevy_math::vec2;
 use bevy_moon_core::prelude::{ComputedLayout, Div, UiStackMap};
 use bevy_render::{Extract, sync_world::RenderEntity};
 use bevy_transform::components::GlobalTransform;
@@ -80,13 +80,14 @@ fn extract_single_div(
         }
 
         let spread_radius = shadow.spread_radius;
-        let spread = Vec2::new(spread_radius, spread_radius * spread_ratio);
+        let spread = vec2(spread_radius, spread_radius * spread_ratio);
+        let offset = shadow.offset * vec2(1.0, -1.0); // Flip Y
 
-        let color = LinearRgba::from(shadow.color).to_f32_array();
-        let offset = shadow.offset * Vec2::new(1.0, -1.0);
-        let blur_radius = shadow.blur_radius;
         let shadow_size = size - spread * 2.0;
         let position = affine.translation.to_vec3() + offset.extend(0.0);
+
+        let blur_radius = shadow.blur_radius;
+        let color = LinearRgba::from(shadow.color).to_f32_array();
 
         extracted_ui_instances.instances.push(ExtractedUiInstance {
             index,

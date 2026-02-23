@@ -73,7 +73,7 @@ fn setup(
                 bottom: LengthPercentage::length(15.0),
                 left: LengthPercentage::length(20.0),
             })
-            .border_color(WHITE)
+            .border_color(RED)
             .shadow_sm(),
         Transform::from_xyz(100.0, 0.0, 0.0),
     ));
@@ -89,7 +89,7 @@ fn setup(
                 bottom: LengthPercentage::length(1.0),
                 left: LengthPercentage::length(1.0),
             })
-            .border_color(WHITE)
+            .border_color(BLACK)
             .corner_radii(Corners::all(10.0))
             .shadow_sm(),
         Transform::from_xyz(187.5, 0.0, 0.0),
@@ -104,7 +104,7 @@ fn setup(
             .w(96.0)
             .h(96.0)
             .background(WHITE)
-            .corner_radii(Corners::all(8.0))
+            .corner_radii(Corners::all(25.0).top_left(0.0).bottom_right(0.0))
             .shadow_sm(),
         Transform::from_xyz(100.0, -100.0, 0.0),
     ));

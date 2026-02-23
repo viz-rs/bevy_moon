@@ -6,8 +6,13 @@ fn sd_rounded_box(point: vec2<f32>, half_size: vec2<f32>, radius: f32) -> f32 {
     let corner_to_point = abs(point) - half_size;
     let q = corner_to_point + radius;
     
+    // its a normal box
+    if radius == 0.0 {
+        return length(max(q, vec2(0.0))) + min(max(q.x, q.y), 0.0);
+    }
+    
     // distance to sides
-    if min(q.x, q.y) < 0.0 || radius == 0.0 {
+    if min(q.x, q.y) < 0.0 {
         return max(q.x, q.y) - radius;
     }
     

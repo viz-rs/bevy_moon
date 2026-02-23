@@ -14,7 +14,7 @@ use bevy_render::{
 };
 
 use crate::{
-    transparent::{PipelineFilter, TransparentUi},
+    transparent::{RenderPhasesFilter, TransparentUi},
     view::{MoonUiCameraView, MoonUiOptions, MoonUiViewTarget},
 };
 

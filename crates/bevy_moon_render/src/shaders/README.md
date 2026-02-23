@@ -148,6 +148,8 @@ Data:
 
 - [Blurred rounded rectangles](https://raphlinus.github.io/graphics/2020/04/21/blurred-rounded-rects.html)
 
+- [Leveraging Rust and the GPU to render user interfaces at 120 FPS](https://zed.dev/blog/videogame)
+
 ## Anti-Aliasing(AA)
 
 | Note: todo(@fundon)

@@ -2,10 +2,11 @@
 #import bevy_render::view::View
 #import bevy_moon::utils::{normalize_vertex_index, get_vertex_by_index}
 #import bevy_moon::utils::{get_corner_index, get_inset_by_index}
+#import bevy_moon::utils::{FRAC_2_SQRT_PI, INVERT_SQRT_2}
+#import bevy_moon::rectangles::{sd_rounded_box}
 
 @group(0) @binding(0) var<uniform> view: View;
 
-const FRAC_2_SQRT_PI: f32 = 2.0 / sqrt(PI);
 const SAMPLES: i32 = max(4, #SHADOW_SAMPLES);
 
 // A standard gaussian function, used for weighting samples
@@ -28,41 +29,67 @@ fn erf(v: vec2<f32>) -> vec2<f32> {
     return s - s / r;
 }
 
+fn blur_along_x(point: vec2<f32>, half_size: vec2<f32>, radius: f32, sigma: f32) -> f32 {
+    let v = INVERT_SQRT_2 / sigma;
+    let ranged = calc_x_range(point, half_size, radius);
+    let integral = 0.5 + 0.5 * erf(ranged * v);
+    return integral.y - integral.x;
+}
+
+fn blur(point: vec2<f32>, half_size: vec2<f32>, radius: f32, sigma: f32) -> f32 {
+    let range = calc_range(point, half_size, sigma);
+    let start = range.x;                
+    let end = range.y;
+    let step = (end - start) / f32(SAMPLES);
+    
+    var y = start + step * 0.5;
+    var alpha = 0.0;
+    for (var i = 0; i < SAMPLES; i += 1) {
+        let blur = blur_along_x(point - vec2(0.0, y), half_size, radius, sigma);
+        alpha += blur * gaussian(y, sigma) * step;
+        y += step;
+    }
+    
+    return alpha;
+}
+
+fn calc_range(point: vec2<f32>, half_size: vec2<f32>, sigma: f32) -> vec2<f32> {
+    let low = point.y - half_size.y;
+    let high = point.y + half_size.y;
+    let start = clamp(-3.0 * sigma, low, high);
+    let end = clamp(3.0 * sigma, low, high);
+    return vec2(start, end);
+}
+
+fn calc_x_range(point: vec2<f32>, half_size: vec2<f32>, radius: f32) -> vec2<f32> {
+    let delta = min(half_size.y - radius - abs(point.y), 0.0);
+    let curved = half_size.x - radius + sqrt(max(0.0, radius * radius - delta * delta));
+    let ranged = point.x + vec2(-curved, curved);
+    return ranged;
+}
+
 // Approximate the erf function
 //
 // <https://raphlinus.github.io/audio/2018/09/05/sigmoid.html>
-fn compute_erf7(v: vec2<f32>) -> vec2<f32> {
+fn erf7(v: vec2<f32>) -> vec2<f32> {
     var x = v * FRAC_2_SQRT_PI;
     let xx = x * x;
     x = x + (0.24295 + (0.03395 + 0.0104 * xx) * xx) * (x * xx);
     return x / sqrt(1.0 + x * x);
 }
 
-fn blur_along_x(x: f32, y: f32, half_size: vec2<f32>, radius: f32, sigma: f32) -> f32 {
-    let delta = min(half_size.y - radius - abs(y), 0.0);
-    let curved = half_size.x - radius + sqrt(max(0.0, radius * radius - delta * delta));
-    // let integral = 0.5 + 0.5 * erf((x + vec2(-curved, curved)) * (sqrt(0.5) / sigma));
-    let integral = 0.5 + 0.5 * compute_erf7((x + vec2(-curved, curved)) * (sqrt(0.5) / sigma));
+// Fast gaussian blur
+fn blur7(point: vec2<f32>, half_size: vec2<f32>, radius: f32, sigma: f32) -> f32 {
+    let range = calc_range(point, half_size, sigma);
+    let start = range.x;                
+    let end = range.y;
+    let step = (end - start);
+    
+    let v = INVERT_SQRT_2 / sigma;
+    let d = sd_rounded_box(point, half_size, radius);
+    let ranged = d + vec2(0.0, select(0.5, radius, radius > 0.0) * step);
+    let integral = 0.5 * erf7(ranged * v);
     return integral.y - integral.x;
-}
-
-
-fn rounded_box_shadow(point: vec2<f32>, half_size: vec2<f32>, radius: f32, sigma: f32) -> f32 {
-    let low = point.y - half_size.y;
-    let high = point.y + half_size.y;
-    let start = clamp(-3.0 * sigma, low, high);
-    let end = clamp(3.0 * sigma, low, high);
-    
-    let step = (end - start) / f32(SAMPLES);
-    var y = start + step * 0.5;
-    var alpha = 0.0;
-    for (var i = 0; i < SAMPLES; i += 1) {
-        let blur = blur_along_x(point.x, point.y - y, half_size, radius, sigma);
-        alpha += blur * gaussian(y, sigma) * step;
-        y += step;
-    }
-    
-    return alpha;
 }
 
 struct VertexInput {
@@ -100,7 +127,7 @@ fn vertex(in: VertexInput) -> VertexOutput {
     let vertex = get_vertex_by_index(vertex_index);
     
     let margin = in.blur_radius * 3.0;
-    let bounds = in.size + margin * 2.0;
+    let bounds = in.size + margin * 2.0; // shadow bounds
     let local_position = vertex * bounds;
     let world_position = in.position.xyz + vec3(local_position, 0.0);
     
@@ -119,13 +146,15 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     let corner_index = get_corner_index(point);
     let radius = in.corner_radii[corner_index];
     let blur_radius = in.blur_radius;
+    
+    let a = blur7(point, half_size, radius, blur_radius);
+    // let a = blur(point, half_size, radius, blur_radius);
+    
     var color = in.color;
     
-    let alpha = rounded_box_shadow(point, half_size, radius, blur_radius);
-    
     // debug
-    // color.a *= smoothstep(0.0, 0.25, alpha);
-    color.a *= alpha;
+    // color.a *= smoothstep(0.0, 0.25, a);
+    color.a *= a;
     
     return color;
 }

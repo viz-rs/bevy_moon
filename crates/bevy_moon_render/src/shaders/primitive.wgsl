@@ -3,11 +3,12 @@
 #import bevy_moon::utils::{normalize_vertex_index, get_vertex_by_index}
 #import bevy_moon::utils::{get_corner_index, get_inset_by_index}
 #import bevy_moon::rectangles::{sd_rounded_box, sd_inset_rounded_box}
+#import bevy_moon::utils::{antialias_f, antialias_c, antialias_s}
 
 @group(0) @binding(0) var<uniform> view: View;
 
-// @group(1) @binding(0) var sprite_texture: texture_2d<f32>;
-// @group(1) @binding(1) var sprite_sampler: sampler;
+@group(1) @binding(0) var sprite_texture: texture_2d<f32>;
+@group(1) @binding(1) var sprite_sampler: sampler;
 
 struct VertexInput {
     @builtin(vertex_index) vertex_index: u32,
@@ -58,6 +59,13 @@ fn vertex(in: VertexInput) -> VertexOutput {
 
 @fragment
 fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
+
+// let texture_color = textureSample(sprite_texture, sprite_sampler, in.uv);
+
+// // Only use the color sampled from the texture if the `TEXTURED` flag is enabled. 
+// // This allows us to draw both textured and untextured shapes together in the same batch.
+// let color = select(in.color, in.color * texture_color, enabled(in.flags, TEXTURED));
+
     let size = in.size;
     let corner_radii = in.corner_radii;
     let border_widths = in.border_widths;
@@ -107,12 +115,17 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
 
     // outer sdf
     let external_distance = sd_rounded_box(point, half_size, radius);
-
-    let a = 1.0 - smoothstep(-0.75, -0.1, external_distance);
-    let b = 1.0 - smoothstep(-0.1, 0.55, external_distance); // +0.65
-
+    
+    // let a = 1.0 - smoothstep(-0.75, -0.1, external_distance);
+    // let b = 1.0 - smoothstep(-0.1, 0.55, external_distance); // +0.65
+    
+    let c = antialias_f(external_distance);
+    // let d = antialias_c(external_distance);
+    // let e = antialias_s(external_distance);
+    
     // color.a *= a; // The original is just multiplied by a.
-    color.a *= mix(a, b, b); // Repair the blank gap caused by antiasing.
+    // color.a *= mix(a, b, b); // Repair the blank gap caused by antiasing.
+    color.a *= c; // Repair the blank gap caused by antiasing.
 
     return color;
 }

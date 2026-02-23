@@ -24,7 +24,7 @@ use bevy_utils::default;
 #[derive(Resource, Clone)]
 pub struct UiPipeline {
     pub view_layout: BindGroupLayoutDescriptor,
-    // pub image_layout: BindGroupLayoutDescriptor,
+    pub image_layout: BindGroupLayoutDescriptor,
     pub shader: Handle<Shader>,
 }
 
@@ -56,8 +56,7 @@ impl SpecializedRenderPipeline for UiPipeline {
         let count = mesh_key.msaa_samples();
 
         let layout = vec![
-            self.view_layout.clone(),
-            // , self.image_layout.clone()
+            self.view_layout.clone(), /*, self.image_layout.clone() */
         ];
 
         let vertex_layout = VertexBufferLayout::from_vertex_formats(
@@ -125,20 +124,20 @@ pub fn init_ui_pipeline(mut commands: Commands, asset_server: Res<AssetServer>) 
         ),
     );
 
-    // let image_layout = BindGroupLayoutDescriptor::new(
-    //     "moon_ui_image_layout",
-    //     &BindGroupLayoutEntries::sequential(
-    //         ShaderStages::FRAGMENT,
-    //         (
-    //             texture_2d(TextureSampleType::Float { filterable: true }),
-    //             sampler(SamplerBindingType::Filtering),
-    //         ),
-    //     ),
-    // );
+    let image_layout = BindGroupLayoutDescriptor::new(
+        "moon_ui_image_layout",
+        &BindGroupLayoutEntries::sequential(
+            ShaderStages::FRAGMENT,
+            (
+                texture_2d(TextureSampleType::Float { filterable: true }),
+                sampler(SamplerBindingType::Filtering),
+            ),
+        ),
+    );
 
     commands.insert_resource(UiPipeline {
         view_layout,
-        // image_layout,
+        image_layout,
         shader: load_embedded_asset!(asset_server.as_ref(), "../../shaders/primitive.wgsl"),
     });
 }

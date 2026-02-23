@@ -17,11 +17,12 @@ use super::{UiInstancesBatch, UiInstancesMeta, UiInstancesViewBindGroup};
 pub type DrawUi = (
     SetItemPipeline,
     SetUiViewBindGroup<0>,
-    // SetUiViewBindGroup<1>,
+    // SetUiTextureBindGroup<1>,
     DrawUiDivBatch,
 );
 
 pub struct SetUiViewBindGroup<const I: usize>;
+
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUiViewBindGroup<I> {
     type Param = ();
     type ViewQuery = (Read<ViewUniformOffset>, Read<UiInstancesViewBindGroup>);
@@ -39,11 +40,12 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUiViewBindGroup<I> {
     }
 }
 
-// pub struct SetUiTextureBindGroup<const I: usize>;
+pub struct SetUiTextureBindGroup<const I: usize>;
+
 // impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUiTextureBindGroup<I> {
 //     type Param = SRes<ImageNodeBindGroups>;
 //     type ViewQuery = ();
-//     type ItemQuery = Read<UiBatch>;
+//     type ItemQuery = Read<UiInstancesBatch>;
 
 //     #[inline]
 //     fn render<'w>(
@@ -56,17 +58,21 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUiViewBindGroup<I> {
 //         let Some(batch) = batch else {
 //             return RenderCommandResult::Skip;
 //         };
+
 //         let image_bind_groups = image_bind_groups.into_inner();
+
 //         let Some(image) = image_bind_groups.values.get(&batch.image) else {
 //             return RenderCommandResult::Failure("missing texture to draw ui");
 //         };
 
 //         pass.set_bind_group(I, image, &[]);
+
 //         RenderCommandResult::Success
 //     }
 // }
 
 pub struct DrawUiDivBatch;
+
 impl<P: PhaseItem> RenderCommand<P> for DrawUiDivBatch {
     type Param = SRes<UiInstancesMeta>;
     type ViewQuery = ();

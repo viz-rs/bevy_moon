@@ -19,7 +19,7 @@ use bevy_render::{
 use smallvec::SmallVec;
 
 use crate::{
-    transparent::{PipelineFilter, TransparentUi},
+    transparent::{RenderPhasesFilter, TransparentUi},
     view::{MoonUiCameraView, MoonUiOptions, MoonUiViewTarget},
 };
 

@@ -95,11 +95,11 @@ impl CachedRenderPipelinePhaseItem for TransparentUi {
     }
 }
 
-pub trait PipelineFilter {
+pub trait RenderPhasesFilter {
     fn filter(&mut self, key: TypeId) -> impl Iterator<Item = &mut TransparentUi>;
 }
 
-impl PipelineFilter for ViewSortedRenderPhases<TransparentUi> {
+impl RenderPhasesFilter for ViewSortedRenderPhases<TransparentUi> {
     fn filter(&mut self, key: TypeId) -> impl Iterator<Item = &mut TransparentUi> {
         self.values_mut()
             .flat_map(move |phase| phase.items.iter_mut().filter(move |item| item.is(key)))
