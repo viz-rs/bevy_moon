@@ -2,6 +2,7 @@ use bevy_color::Color;
 use bevy_ecs::{component::Component, prelude::ReflectComponent};
 use bevy_reflect::{Reflect, prelude::ReflectDefault};
 use bevy_transform::components::Transform;
+use smallvec::SmallVec;
 use taffy::*;
 
 use super::computed::ComputedLayout;
@@ -30,7 +31,7 @@ pub struct Div {
     pub background: Option<Color>,
     pub corner_radii: Corners<f32>,
     pub border_color: Option<Color>,
-    pub box_shadow: Option<Vec<BoxShadow>>,
+    pub box_shadow: Option<SmallVec<[BoxShadow; 2]>>,
 }
 
 unsafe impl Send for Div {}
@@ -245,7 +246,7 @@ impl Div {
 
     // Sets box shadows
     pub fn shadow(mut self, shadows: Vec<BoxShadow>) -> Self {
-        self.box_shadow = Some(shadows);
+        self.box_shadow = Some(SmallVec::from_vec(shadows));
         self
     }
 
@@ -255,12 +256,12 @@ impl Div {
     }
 
     pub fn shadow_2xs(mut self) -> Self {
-        self.box_shadow = Some(BoxShadow::XS2.into());
+        self.box_shadow = Some(SmallVec::from_slice(&BoxShadow::XS2));
         self
     }
 
     pub fn shadow_xs(mut self) -> Self {
-        self.box_shadow = Some(BoxShadow::XS.into());
+        self.box_shadow = Some(SmallVec::from_slice(&BoxShadow::XS));
         self
     }
 
@@ -285,7 +286,7 @@ impl Div {
     }
 
     pub fn shadow_2xl(mut self) -> Self {
-        self.box_shadow = Some(BoxShadow::XL2.into());
+        self.box_shadow = Some(SmallVec::from_slice(&BoxShadow::XL2));
         self
     }
 }
