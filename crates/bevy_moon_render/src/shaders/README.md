@@ -2,7 +2,7 @@
 
 ## Coordinates
 
-### UV
+### UV mapping
 
 ```text
   [0.0, 0.0]       →       [1.0, 0.0]

@@ -8,6 +8,6 @@ pub struct UiInstance {
     pub size: [f32; 2],
     pub flags: u32,
     pub corner_radii: [f32; 4],
-    pub border_widths: [f32; 4],
     pub border_color: [f32; 4],
+    pub border_widths: [f32; 4],
 }

@@ -140,9 +140,12 @@ pub fn prepare_shadows(
             .and_modify(|batch| {
                 batch.range.end = index + 1;
             })
-            .or_insert_with(|| UiShadowBatch::new(index..index + 1));
-
-        item.batch_range_mut().end += 1;
+            .or_insert_with(|| {
+                // only the first phase needs to be updated
+                // phases under the same entity are batch processed
+                item.batch_range_mut().end += 1;
+                UiShadowBatch::new(index..index + 1)
+            });
     }
 
     ui_meta

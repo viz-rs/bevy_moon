@@ -183,11 +183,15 @@ pub fn prepare_divs(
             .entry(item.entity())
             .and_modify(|batch| {
                 batch.range.end = index + 1;
-                batch.texture = texture; // updates it with real texture
+                // updates it with real texture
+                batch.texture = texture;
             })
-            .or_insert_with(|| UiInstanceBatch::new(index..index + 1).with_texture(texture));
-
-        item.batch_range_mut().end += 1;
+            .or_insert_with(|| {
+                // only the first phase needs to be updated
+                // phases under the same entity are batch processed
+                item.batch_range_mut().end += 1;
+                UiInstanceBatch::new(index..index + 1).with_texture(texture)
+            });
     }
 
     ui_meta

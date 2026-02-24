@@ -70,9 +70,9 @@ impl SpecializedRenderPipeline for UiPipeline {
                 VertexFormat::Uint32,
                 // corner_radii
                 VertexFormat::Float32x4,
-                // border widths
-                VertexFormat::Float32x4,
                 // border color
+                VertexFormat::Float32x4,
+                // border widths
                 VertexFormat::Float32x4,
             ],
         );

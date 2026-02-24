@@ -92,7 +92,7 @@ fn blur7(point: vec2<f32>, half_size: vec2<f32>, radius: f32, sigma: f32) -> f32
 }
 
 struct VertexInput {
-    @builtin(vertex_index) vertex_index: u32,
+    @builtin(vertex_index) vertex_id: u32,
     
     @location(0) position: vec3<f32>,
     @location(1) size: vec2<f32>,
@@ -115,25 +115,23 @@ struct VertexOutput {
 
 @vertex
 fn vertex(in: VertexInput) -> VertexOutput {
-    var out: VertexOutput;
-    
-    out.size = in.size;
-    out.color = in.color;
-    out.corner_radii = in.corner_radii;
-    out.blur_radius = in.blur_radius;
-    
-    let vertex_index = normalize_vertex_index(in.vertex_index);
+    let vertex_index = normalize_vertex_index(in.vertex_id);
     let vertex = get_vertex_by_index(vertex_index);
-    
+
     let margin = in.blur_radius * 3.0;
     let bounds = in.size + margin * 2.0; // shadow bounds
     let local_position = vertex * bounds;
     let world_position = in.position.xyz + vec3(local_position, 0.0);
-    
-    out.uv = vertex + vec2(0.5);
+
+    var out: VertexOutput;
+
+    out.size = in.size;
+    out.color = in.color;
+    out.corner_radii = in.corner_radii;
+    out.blur_radius = in.blur_radius;
     out.local_position = local_position;
     out.clip_position = view.clip_from_world * vec4(world_position, 1.0);
-    
+
     return out;
 }
 

@@ -104,7 +104,6 @@ fn setup(
         div()
             .w(128.0)
             .h(128.0)
-            // .flex()
             .border(Rect {
                 top: LengthPercentage::length(2.0),
                 right: LengthPercentage::length(2.0),
@@ -115,11 +114,30 @@ fn setup(
             .background(WHITE)
             .corner_radii(Corners::all(12.0))
             .shadow_md(),
-        // children![(
-        // div().flex().flex_auto(),
         image(asset_server.load("images/bevy.png")),
-        // )],
         Transform::from_xyz(-150.0, -150.0, 0.0),
+    ));
+
+    commands.spawn((
+        div()
+            .w(128.0)
+            .h(128.0)
+            .flex()
+            .border(Rect {
+                top: LengthPercentage::length(2.0),
+                right: LengthPercentage::length(2.0),
+                bottom: LengthPercentage::length(2.0),
+                left: LengthPercentage::length(2.0),
+            })
+            .border_color(RED)
+            .background(WHITE)
+            .corner_radii(Corners::all(12.0))
+            .shadow_md(),
+        children![(
+            div().flex().flex_auto(),
+            image(asset_server.load("images/bevy.png")),
+        )],
+        Transform::from_xyz(150.0, 150.0, 0.0),
     ));
 
     commands.spawn((

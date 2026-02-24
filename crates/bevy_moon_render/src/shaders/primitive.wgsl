@@ -1,6 +1,6 @@
 #import bevy_render::view::View
 #import bevy_moon::flags::{TEXTURED, enabled}
-#import bevy_moon::utils::{is_xyzw_zero}
+#import bevy_moon::utils::{is_all3, is_empty4, to_uv}
 #import bevy_moon::utils::{normalize_vertex_index, get_vertex_by_index}
 #import bevy_moon::utils::{get_corner_index, get_inset_by_index}
 #import bevy_moon::utils::{aa_c, aa_f, aa_s}
@@ -12,7 +12,7 @@
 @group(1) @binding(1) var sprite_sampler: sampler;
 
 struct VertexInput {
-    @builtin(vertex_index) vertex_index: u32,
+    @builtin(vertex_index) vertex_id: u32,
     
     @location(0) position: vec3<f32>,
     @location(1) color: vec4<f32>,
@@ -20,8 +20,8 @@ struct VertexInput {
     @location(2) size: vec2<f32>,
     @location(3) flags: u32,
     @location(4) corner_radii: vec4<f32>,
-    @location(5) border_widths: vec4<f32>,
-    @location(6) border_color: vec4<f32>,
+    @location(5) border_color: vec4<f32>,
+    @location(6) border_widths: vec4<f32>,
 };
 
 struct VertexOutput {
@@ -34,31 +34,31 @@ struct VertexOutput {
     @location(3) @interpolate(flat) size: vec2<f32>,
     @location(4) @interpolate(flat) flags: u32,
     @location(5) @interpolate(flat) corner_radii: vec4<f32>,
-    @location(6) @interpolate(flat) border_widths: vec4<f32>,
-    @location(7) @interpolate(flat) border_color: vec4<f32>,
+    @location(6) @interpolate(flat) border_color: vec4<f32>,
+    @location(7) @interpolate(flat) border_widths: vec4<f32>,
 };
 
 @vertex
 fn vertex(in: VertexInput) -> VertexOutput {
+    let vertex_index = normalize_vertex_index(in.vertex_id);
+    let vertex = get_vertex_by_index(vertex_index);
+
+    let local_position = vertex * in.size;
+    let world_position = in.position.xyz + vec3(local_position, 0.0);
+
     var out: VertexOutput;
-    
+
     out.size = in.size;
     out.color = in.color;
     out.flags = in.flags;
     out.corner_radii = in.corner_radii;
     out.border_color = in.border_color;
     out.border_widths = in.border_widths;
-    
-    let vertex_index = normalize_vertex_index(in.vertex_index);
-    let vertex = get_vertex_by_index(vertex_index);
-    
-    let local_position = vertex * in.size;
-    let world_position = in.position.xyz + vec3(local_position, 0.0);
-    
-    out.uv = vertex * vec2(1.0, -1.0) + vec2(0.5);
+
+    out.uv = to_uv(vertex);
     out.local_position = local_position;
     out.clip_position = view.clip_from_world * vec4(world_position, 1.0);
-    
+
     return out;
 }
 
@@ -73,8 +73,8 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     let corner_radii = in.corner_radii;
     let border_widths = in.border_widths;
     
-    let unborded = is_xyzw_zero(border_widths);
-    let unrounded = is_xyzw_zero(corner_radii);
+    let unborded = is_empty4(border_widths);
+    let unrounded = is_empty4(corner_radii);
     
     // fast path
     if unborded && unrounded {
@@ -99,7 +99,7 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     let border_color = in.border_color;
 
     // If there's a border color and border width we need to calculate the inner sdf.
-    if all(vec3(cb, border_color.a) != vec3(0.0)) {
+    if is_all3(vec3(cb, border_color.a)) {
         // inner sdf
         let internal_distance = sd_inset_rounded_box(point, half_size, radius, tl, br, cb);
         

@@ -21,7 +21,20 @@ fn get_inset_by_index(insets: vec4<f32>, index: u32) -> vec2<f32> {
     return array(insets.wx, insets.yx, insets.yz, insets.wz)[index];
 }
 
-fn is_xyzw_zero(v: vec4<f32>) -> bool {
+// Converts a local position to UV coordinates
+fn to_uv(vertex: vec2<f32>) -> vec2<f32> {
+    return vertex * vec2(1.0, -1.0) + vec2(0.5);
+}
+
+fn is_all3(v: vec3<f32>) -> bool {
+    return all(v != vec3(0.0));
+}
+
+fn is_empty3(v: vec3<f32>) -> bool {
+    return all(v == vec3(0.0));
+}
+
+fn is_empty4(v: vec4<f32>) -> bool {
     return all(v == vec4(0.0));
 }
 
