@@ -72,7 +72,7 @@ fn extract_single_div(
     let affine = transform.affine();
     let size = computed_layout.size;
     let spread_ratio = size.y / size.x;
-    let corner_radii = div.corner_radii.into(); // should be computed_layout.corner_radii
+    let corner_radii = div.corner_radii.to_array(); // should be computed_layout.corner_radii
 
     for shadow in shadows {
         if shadow.color.is_fully_transparent() {
@@ -99,8 +99,8 @@ fn extract_single_div(
                 color,
                 corner_radii,
                 blur_radius,
-                size: shadow_size.into(),
-                position: position.into(),
+                size: shadow_size.to_array(),
+                position: position.to_array(),
             },
         });
     }

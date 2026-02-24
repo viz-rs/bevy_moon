@@ -82,9 +82,9 @@ fn extract_single_div(
     let index = div.stack_index as f32;
     let main_entity = entity.into();
     let affine = transform.affine();
-    let position = affine.translation.into();
-    let size = computed_layout.size.into();
-    let corner_radii = div.corner_radii.into(); // should be computed_layout.corner_radii
+    let position = affine.translation.to_array();
+    let size = computed_layout.size.to_array();
+    let corner_radii = div.corner_radii.to_array(); // should be computed_layout.corner_radii
     let border_widths = computed_layout.border_widths.to_array();
 
     extracted_ui_instances.instances.push(ExtractedUiInstance {
@@ -157,10 +157,10 @@ fn extract_single_image(
     let index = div.stack_index as f32 + 0.01;
     let main_entity = entity.into();
     let affine = transform.affine();
-    let position = affine.translation.into();
-    let size = computed_layout.size.into();
+    let position = affine.translation.to_array();
+    let size = computed_layout.size.to_array();
     let color = image.color.to_linear().to_f32_array();
-    let corner_radii = div.corner_radii.into(); // should be computed_layout.corner_radii
+    let corner_radii = div.corner_radii.to_array(); // should be computed_layout.corner_radii
     let border_color = LinearRgba::NONE.to_f32_array(); // ignore border color
     let border_widths = computed_layout.border_widths.to_array();
 

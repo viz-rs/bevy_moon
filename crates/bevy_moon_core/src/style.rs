@@ -75,6 +75,16 @@ where
             bottom_left: f(self.bottom_left),
         }
     }
+
+    #[inline]
+    pub const fn to_array(self) -> [T; 4] {
+        [
+            self.top_left,
+            self.top_right,
+            self.bottom_right,
+            self.bottom_left,
+        ]
+    }
 }
 
 impl Corners<f32> {
@@ -82,18 +92,6 @@ impl Corners<f32> {
 
     const fn resolve_single(radius: f32, min_length: f32) -> f32 {
         radius.clamp(0.0, 0.5 * min_length)
-    }
-}
-
-impl From<Corners<f32>> for [f32; 4] {
-    #[inline]
-    fn from(value: Corners<f32>) -> Self {
-        [
-            value.top_left,
-            value.top_right,
-            value.bottom_right,
-            value.bottom_left,
-        ]
     }
 }
 
