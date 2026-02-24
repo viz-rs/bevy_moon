@@ -95,8 +95,8 @@ struct VertexInput {
     @builtin(vertex_index) vertex_id: u32,
     
     @location(0) position: vec3<f32>,
-    @location(1) size: vec2<f32>,
-    @location(2) color: vec4<f32>,
+    @location(1) color: vec4<f32>,
+    @location(2) size: vec2<f32>,
     @location(3) corner_radii: vec4<f32>,
     @location(4) blur_radius: f32,
 };
@@ -104,13 +104,12 @@ struct VertexInput {
 struct VertexOutput {
     @builtin(position) clip_position: vec4<f32>,
     
-    @location(0) uv: vec2<f32>,
-    @location(1) local_position: vec2<f32>,
+    @location(0) local_position: vec2<f32>,
     
+    @location(1) @interpolate(flat) color: vec4<f32>,
     @location(2) @interpolate(flat) size: vec2<f32>,
-    @location(3) @interpolate(flat) color: vec4<f32>,
-    @location(4) @interpolate(flat) corner_radii: vec4<f32>,
-    @location(5) @interpolate(flat) blur_radius: f32,
+    @location(3) @interpolate(flat) corner_radii: vec4<f32>,
+    @location(4) @interpolate(flat) blur_radius: f32,
 };
 
 @vertex
@@ -122,27 +121,25 @@ fn vertex(in: VertexInput) -> VertexOutput {
     let bounds = in.size + margin * 2.0; // shadow bounds
     let local_position = vertex * bounds;
     let world_position = in.position.xyz + vec3(local_position, 0.0);
+    let clip_position = view.clip_from_world * vec4(world_position, 1.0);
 
-    var out: VertexOutput;
-
-    out.size = in.size;
-    out.color = in.color;
-    out.corner_radii = in.corner_radii;
-    out.blur_radius = in.blur_radius;
-    out.local_position = local_position;
-    out.clip_position = view.clip_from_world * vec4(world_position, 1.0);
-
-    return out;
+    return VertexOutput(
+        clip_position,
+        local_position,
+        in.color,
+        in.size,
+        in.corner_radii,
+        in.blur_radius,
+    );
 }
 
 @fragment
 fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
-    let size = in.size;
-    let half_size = size * 0.5;
+    let half_size = in.size * 0.5;
     let point = in.local_position;
+    let blur_radius = in.blur_radius;
     let corner_index = get_corner_index(point);
     let radius = in.corner_radii[corner_index];
-    let blur_radius = in.blur_radius;
     
     let a = blur7(point, half_size, radius, blur_radius);
     // let a = blur(point, half_size, radius, blur_radius);

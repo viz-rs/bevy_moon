@@ -55,10 +55,10 @@ impl SpecializedRenderPipeline for UiShadowsPipeline {
             vec![
                 // position
                 VertexFormat::Float32x3,
-                // size
-                VertexFormat::Float32x2,
                 // color
                 VertexFormat::Float32x4,
+                // size
+                VertexFormat::Float32x2,
                 // corner_radii
                 VertexFormat::Float32x4,
                 // blur_radius
