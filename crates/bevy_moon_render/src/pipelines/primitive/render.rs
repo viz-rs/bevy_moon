@@ -26,7 +26,7 @@ use crate::{
 use super::{
     ExtractedUiInstances, UiInstanceBatch, UiInstanceMeta, UiInstanceViewBindGroup,
     draw::DrawUi,
-    pipeline::{UI_PIPELINE_KEY, UiPipeline, UiPipelineKey},
+    pipeline::{UiPipeline, UiPipelineKey},
 };
 
 pub fn queue_divs(
@@ -85,7 +85,6 @@ pub fn queue_divs(
             indexed: true,
             batch_range: 0..0,
             extra_index: PhaseItemExtraIndex::None,
-            pipeline_key: UI_PIPELINE_KEY,
         });
     }
 }
@@ -122,6 +121,7 @@ pub fn prepare_divs(
     ui_pipeline: Res<UiPipeline>,
     gpu_images: Res<RenderAssets<GpuImage>>,
     events: Res<SpriteAssetEvents>,
+    draw_functions: Res<DrawFunctions<TransparentUi>>,
     mut commands: Commands,
     mut ui_meta: ResMut<UiInstanceMeta>,
     mut extracted_ui_instances: ResMut<ExtractedUiInstances>,
@@ -144,9 +144,11 @@ pub fn prepare_divs(
 
     ui_meta.instance_buffer.clear();
 
+    let draw_function = draw_functions.read().id::<DrawUi>();
+
     let mut batches: EntityHashMap<UiInstanceBatch> = EntityHashMap::with_capacity(*previous_len);
 
-    for item in render_phases.filter(UI_PIPELINE_KEY) {
+    for item in render_phases.filter(draw_function) {
         let Some(extracted_ui_instance) = extracted_ui_instances
             .instances
             .get(item.extracted_index)

@@ -1,5 +1,3 @@
-use std::any::TypeId;
-
 use bevy_asset::{AssetServer, Handle, load_embedded_asset};
 use bevy_ecs::{
     resource::Resource,
@@ -33,8 +31,6 @@ pub struct UiPipelineKey {
     pub mesh_key: Mesh2dPipelineKey,
     // pub anti_alias: bool,
 }
-
-pub const UI_PIPELINE_KEY: TypeId = TypeId::of::<UiPipelineKey>();
 
 impl SpecializedRenderPipeline for UiPipeline {
     type Key = UiPipelineKey;

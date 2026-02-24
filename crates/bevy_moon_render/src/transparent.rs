@@ -1,4 +1,4 @@
-use std::{any::TypeId, ops::Range};
+use std::ops::Range;
 
 use bevy_ecs::entity::Entity;
 use bevy_math::FloatOrd;
@@ -21,15 +21,6 @@ pub struct TransparentUi {
     pub extra_index: PhaseItemExtraIndex,
     pub indexed: bool,
     pub extracted_index: usize,
-    pub pipeline_key: TypeId,
-}
-
-impl TransparentUi {
-    /// Checks if the pipeline key matches the given key.
-    #[inline]
-    pub fn is(&self, key: TypeId) -> bool {
-        self.pipeline_key == key
-    }
 }
 
 impl PhaseItem for TransparentUi {
@@ -96,13 +87,22 @@ impl CachedRenderPipelinePhaseItem for TransparentUi {
 }
 
 pub trait RenderPhasesFilter {
-    fn filter(&mut self, key: TypeId) -> impl Iterator<Item = &mut TransparentUi>;
+    fn filter(&mut self, draw_function: DrawFunctionId)
+    -> impl Iterator<Item = &mut TransparentUi>;
 }
 
 impl RenderPhasesFilter for ViewSortedRenderPhases<TransparentUi> {
-    fn filter(&mut self, key: TypeId) -> impl Iterator<Item = &mut TransparentUi> {
+    fn filter(
+        &mut self,
+        draw_function: DrawFunctionId,
+    ) -> impl Iterator<Item = &mut TransparentUi> {
         self.values_mut()
-            .flat_map(move |phase| phase.items.iter_mut().filter(move |item| item.is(key)))
+            .flat_map(move |phase| {
+                phase
+                    .items
+                    .iter_mut()
+                    .filter(move |item| item.draw_function == draw_function)
+            })
             .into_iter()
     }
 }

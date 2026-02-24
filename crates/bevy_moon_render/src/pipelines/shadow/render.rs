@@ -21,7 +21,7 @@ use crate::{
 use super::{
     ExtractedUiShadows, UiShadowBatch, UiShadowMeta, UiShadowViewBindGroup,
     draw::DrawShadows,
-    pipeline::{UI_SHADOWS_PIPELINE_KEY, UiShadowsPipeline, UiShadowsPipelineKey},
+    pipeline::{UiShadowsPipeline, UiShadowsPipelineKey},
 };
 
 pub fn queue_shadows(
@@ -79,7 +79,6 @@ pub fn queue_shadows(
             indexed: true,
             batch_range: 0..0,
             extra_index: PhaseItemExtraIndex::None,
-            pipeline_key: UI_SHADOWS_PIPELINE_KEY,
         });
     }
 }
@@ -112,6 +111,7 @@ pub fn prepare_div_view_bind_groups(
 pub fn prepare_shadows(
     render_device: Res<RenderDevice>,
     render_queue: Res<RenderQueue>,
+    draw_functions: Res<DrawFunctions<TransparentUi>>,
     mut commands: Commands,
     mut ui_meta: ResMut<UiShadowMeta>,
     mut extracted_ui_instances: ResMut<ExtractedUiShadows>,
@@ -120,9 +120,11 @@ pub fn prepare_shadows(
 ) {
     ui_meta.instance_buffer.clear();
 
+    let draw_function = draw_functions.read().id::<DrawShadows>();
+
     let mut batches: EntityHashMap<UiShadowBatch> = EntityHashMap::with_capacity(*previous_len);
 
-    for item in render_phases.filter(UI_SHADOWS_PIPELINE_KEY) {
+    for item in render_phases.filter(draw_function) {
         let Some(extracted_ui_instance) = extracted_ui_instances
             .instances
             .get(item.extracted_index)

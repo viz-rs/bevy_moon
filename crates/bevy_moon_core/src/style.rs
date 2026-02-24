@@ -76,6 +76,7 @@ where
         }
     }
 
+    /// Converts `self` to `[top_left, top_right, bottom_right, bottom_left]`.
     #[inline]
     pub const fn to_array(self) -> [T; 4] {
         [

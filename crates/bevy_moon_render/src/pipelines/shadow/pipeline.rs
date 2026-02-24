@@ -1,5 +1,3 @@
-use std::any::TypeId;
-
 use bevy_asset::{AssetServer, Handle, load_embedded_asset};
 use bevy_ecs::{
     resource::Resource,
@@ -32,8 +30,6 @@ pub struct UiShadowsPipelineKey {
     /// Number of samples, a higher value results in better quality shadows.
     pub samples: u32,
 }
-
-pub const UI_SHADOWS_PIPELINE_KEY: TypeId = TypeId::of::<UiShadowsPipelineKey>();
 
 impl SpecializedRenderPipeline for UiShadowsPipeline {
     type Key = UiShadowsPipelineKey;
