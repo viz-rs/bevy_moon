@@ -44,11 +44,8 @@ struct VertexOutput {
 @vertex
 fn vertex(in: VertexInput) -> VertexOutput {
     let vertex_index = normalize_vertex_index(in.vertex_id);
+    let uv = to_uv(vertex_index);
     let vertex = get_vertex_by_index(vertex_index);
-
-    // let uv = to_uv(vertex);
-    let v = in.vertex_id ^ 2u;
-    let uv = vec2(f32(v & 1u), f32(v >> 1u));
     
     let local_position = vertex * in.size;
     let world_position = in.position.xyz + vec3(local_position, 0.0);
@@ -100,12 +97,7 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     
     let tl = get_inset_by_index(border_widths, 0); // TopLeft
     let br = get_inset_by_index(border_widths, 2); // BottomRight
-    var cb: vec2<f32>;                             // Current corner border
-    switch corner_index {
-        case 0u: { cb = tl; }
-        case 2u: { cb = br; }
-        default: { cb = get_inset_by_index(border_widths, corner_index); }
-    }
+    let cb = get_inset_by_index(border_widths, corner_index); // Current corner border
     
     let half_size = in.size * 0.5;
     let radius = corner_radii[corner_index];

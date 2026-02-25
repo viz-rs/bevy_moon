@@ -13,13 +13,7 @@ const SCALE_DOWN = 3u;
 ///
 /// <https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/object-fit>
 /// <https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/object-position>
-fn object_fit(
-    uv: vec2<f32>,
-    dst_size: vec2<f32>,
-    src_size: vec2<f32>,
-    object_position: vec2<f32>,
-    mode: u32
-) -> vec2<f32> {
+fn object_fit(uv: vec2<f32>, dst_size: vec2<f32>, src_size: vec2<f32>, center: vec2<f32>, mode: u32) -> vec2<f32> {
     let ratio = dst_size / src_size;
     var scale = ratio;
     
@@ -47,7 +41,7 @@ fn object_fit(
         }
     }
     
-    let out = (uv - object_position) * scale + object_position;
+    let out = (uv - center) * scale + center;
     
     // clear the overflow
     // TODO(@fundon): improve overflow handling

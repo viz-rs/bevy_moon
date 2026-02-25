@@ -22,8 +22,14 @@ fn get_inset_by_index(insets: vec4<f32>, index: u32) -> vec2<f32> {
 }
 
 // Converts a local position to UV coordinates
-fn to_uv(vertex: vec2<f32>) -> vec2<f32> {
-    return vertex * vec2(1.0, -1.0) + vec2(0.5);
+// fn to_uv(vertex: vec2<f32>) -> vec2<f32> {
+//     return vertex * vec2(1.0, -1.0) + vec2(0.5);
+// }
+
+// Converts a vertex index to UV coordinates
+fn to_uv(vertex_index: u32) -> vec2<f32> {
+    let v = vertex_index ^ 2u;
+    return vec2(f32(v & 1u), f32(v >> 1u));
 }
 
 fn is_all3(v: vec3<f32>) -> bool {
