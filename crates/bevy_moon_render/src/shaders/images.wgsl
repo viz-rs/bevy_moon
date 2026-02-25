@@ -11,7 +11,13 @@ const SCALE_DOWN = 3u;
 /// uv = (uv - center) / scale + center
 /// ```
 /// <https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/object-fit>
-fn object_fit(uv: vec2<f32>, src_size: vec2<f32>, dst_size: vec2<f32>, object_position: vec2<f32>, mode: u32) -> vec2<f32> {
+fn object_fit(
+    uv: vec2<f32>,
+    dst_size: vec2<f32>,
+    src_size: vec2<f32>,
+    object_position: vec2<f32>,
+    mode: u32
+) -> vec2<f32> {
     let ratio = dst_size / src_size;
     var scale = ratio;
     

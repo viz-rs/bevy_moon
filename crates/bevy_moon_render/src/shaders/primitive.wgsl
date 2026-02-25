@@ -78,7 +78,7 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
         let dst_size = in.size;
         let position = in.object_fit.xy;
         let fit = u32(in.object_fit.z);
-        let uv = images::object_fit(in.uv, src_size, dst_size, position, fit);
+        let uv = images::object_fit(in.uv, dst_size, src_size, position, fit);
         
         color *= textureSample(sprite_texture, sprite_sampler, uv);
     }
