@@ -41,12 +41,11 @@ fn object_fit(uv: vec2<f32>, dst_size: vec2<f32>, src_size: vec2<f32>, center: v
         }
     }
     
-    let out = (uv - center) * scale + center;
+    var out = (uv - center) * scale + center;
     
-    // clear the overflow
-    // TODO(@fundon): improve overflow handling
-    if any(out < vec2(0.0)) || any(out > vec2(1.0)) {
-        return vec2(0.0);
+    // overflow handling
+    if any(out < vec2(0.0)) | any(out > vec2(1.0)) {
+        out = vec2(0.0);
     }
     
     return out;
