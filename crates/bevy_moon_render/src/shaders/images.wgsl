@@ -6,11 +6,13 @@ const COVER      = 2u;
 const SCALE_DOWN = 3u;
 
 /// How an image should fit within its container.
-/// 
+///
 /// ```text
 /// uv = (uv - center) / scale + center
 /// ```
+///
 /// <https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/object-fit>
+/// <https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/object-position>
 fn object_fit(
     uv: vec2<f32>,
     dst_size: vec2<f32>,
