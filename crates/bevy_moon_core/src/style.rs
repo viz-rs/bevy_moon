@@ -221,12 +221,12 @@ pub enum ObjectFit {
     None,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Default, Reflect)]
-pub struct ObjectPosition(Vec2);
-
 /// How to align an image within its container.
 ///
 /// <https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/object-position>
+#[derive(Debug, Clone, Copy, PartialEq, Default, Reflect)]
+pub struct ObjectPosition(Vec2);
+
 impl ObjectPosition {
     pub const TOP_LEFT: Self = Self(Vec2::ZERO);
     pub const TOP_CENTER: Self = Self(Vec2::new(0.5, 0.0));
