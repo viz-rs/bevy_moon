@@ -37,35 +37,35 @@ impl Image {
         object_position: ObjectPosition::CENTER,
     };
 
-    pub fn fill(self) -> Self {
+    pub fn object_fit_fill(self) -> Self {
         Self {
             object_fit: ObjectFit::Fill,
             ..self
         }
     }
 
-    pub fn contain(self) -> Self {
+    pub fn object_fit_contain(self) -> Self {
         Self {
             object_fit: ObjectFit::Contain,
             ..self
         }
     }
 
-    pub fn cover(self) -> Self {
+    pub fn object_fit_cover(self) -> Self {
         Self {
             object_fit: ObjectFit::Cover,
             ..self
         }
     }
 
-    pub fn none(self) -> Self {
+    pub fn object_fit_none(self) -> Self {
         Self {
             object_fit: ObjectFit::None,
             ..self
         }
     }
 
-    pub fn scale_down(self) -> Self {
+    pub fn object_fit_scale_down(self) -> Self {
         Self {
             object_fit: ObjectFit::ScaleDown,
             ..self
