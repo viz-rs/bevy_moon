@@ -5,6 +5,7 @@
 #import bevy_moon::utils::{get_corner_index, get_inset_by_index}
 #import bevy_moon::utils::{aa_c, aa_f, aa_s}
 #import bevy_moon::rectangles::{sd_rounded_box, sd_inset_rounded_box}
+#import bevy_moon::images
 
 @group(0) @binding(0) var<uniform> view: View;
 
@@ -22,6 +23,7 @@ struct VertexInput {
     @location(4) corner_radii: vec4<f32>,
     @location(5) border_color: vec4<f32>,
     @location(6) border_widths: vec4<f32>,
+    @location(7) object_fit: vec3<f32>,
 };
 
 struct VertexOutput {
@@ -36,6 +38,7 @@ struct VertexOutput {
     @location(5) @interpolate(flat) corner_radii: vec4<f32>,
     @location(6) @interpolate(flat) border_color: vec4<f32>,
     @location(7) @interpolate(flat) border_widths: vec4<f32>,
+    @location(8) @interpolate(flat) object_fit: vec3<f32>,
 };
 
 @vertex
@@ -43,33 +46,43 @@ fn vertex(in: VertexInput) -> VertexOutput {
     let vertex_index = normalize_vertex_index(in.vertex_id);
     let vertex = get_vertex_by_index(vertex_index);
 
+    // let uv = to_uv(vertex);
+    let v = in.vertex_id ^ 2u;
+    let uv = vec2(f32(v & 1u), f32(v >> 1u));
+    
     let local_position = vertex * in.size;
     let world_position = in.position.xyz + vec3(local_position, 0.0);
+    let clip_position = view.clip_from_world * vec4(world_position, 1.0);
 
-    var out: VertexOutput;
-
-    out.size = in.size;
-    out.color = in.color;
-    out.flags = in.flags;
-    out.corner_radii = in.corner_radii;
-    out.border_color = in.border_color;
-    out.border_widths = in.border_widths;
-
-    out.uv = to_uv(vertex);
-    out.local_position = local_position;
-    out.clip_position = view.clip_from_world * vec4(world_position, 1.0);
-
-    return out;
+    return VertexOutput(
+        clip_position,
+        uv,
+        local_position,
+        in.color,
+        in.size,
+        in.flags,
+        in.corner_radii,
+        in.border_color,
+        in.border_widths,
+        in.object_fit,
+    );
 }
 
 @fragment
 fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
-    var color = select(
-        in.color,
-        in.color * textureSample(sprite_texture, sprite_sampler, in.uv),
-        enabled(in.flags, TEXTURED)
-    );
+    var color = in.color;
     
+    // should split this into a standalone pipeline
+    if enabled(in.flags, TEXTURED) {
+        let src_size = vec2<f32>(textureDimensions(sprite_texture, 0));
+        let dst_size = in.size;
+        let position = in.object_fit.xy;
+        let fit = u32(in.object_fit.z);
+        let uv = images::object_fit(in.uv, src_size, dst_size, position, fit);
+        
+        color *= textureSample(sprite_texture, sprite_sampler, uv);
+    }
+
     let corner_radii = in.corner_radii;
     let border_widths = in.border_widths;
     

@@ -101,6 +101,7 @@ fn extract_single_div(
             corner_radii,
             border_color,
             border_widths,
+            object_fit: [0.0, 0.0, 0.0],
         },
     });
 }
@@ -163,6 +164,9 @@ fn extract_single_image(
     let corner_radii = div.corner_radii.to_array(); // should be computed_layout.corner_radii
     let border_color = LinearRgba::NONE.to_f32_array(); // ignore border color
     let border_widths = computed_layout.border_widths.to_array();
+    let object_fit = (*image.object_position)
+        .extend(image.object_fit as isize as f32)
+        .to_array();
 
     extracted_ui_instances.instances.push(ExtractedUiInstance {
         index,
@@ -178,6 +182,7 @@ fn extract_single_image(
             corner_radii,
             border_color,
             border_widths,
+            object_fit,
         },
     });
 }

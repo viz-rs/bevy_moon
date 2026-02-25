@@ -11,10 +11,10 @@ mod systems;
 pub mod prelude {
     pub use crate::components::computed::ComputedLayout;
     pub use crate::components::div::{Div, div};
-    pub use crate::components::image::{Image, image};
+    pub use crate::components::image::{Image, img};
     pub use crate::layout::UiLayoutTree;
     pub use crate::measure::{Measure, MeasureArgs};
     pub use crate::plugin::MoonCorePlugin;
     pub use crate::stack::UiStackMap;
-    pub use crate::style::{BoxShadow, Corners};
+    pub use crate::style::{BoxShadow, Corners, ObjectFit, ObjectPosition};
 }

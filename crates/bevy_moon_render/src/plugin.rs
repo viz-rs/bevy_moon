@@ -22,6 +22,7 @@ impl Plugin for MoonRenderPlugin {
         load_shader_library!(app, "shaders/corners.wgsl");
         load_shader_library!(app, "shaders/rectangles.wgsl");
         load_shader_library!(app, "shaders/utils.wgsl");
+        load_shader_library!(app, "shaders/images.wgsl");
 
         app.register_required_components::<Div, SyncToRenderWorld>();
 

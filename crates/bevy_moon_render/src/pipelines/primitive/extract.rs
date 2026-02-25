@@ -10,4 +10,7 @@ pub struct UiInstance {
     pub corner_radii: [f32; 4],
     pub border_color: [f32; 4],
     pub border_widths: [f32; 4],
+
+    // image object fit parameters: [ObjectPosition.x, ObjectPosition.y, ObjectFit]
+    pub object_fit: [f32; 3],
 }

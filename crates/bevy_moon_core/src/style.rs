@@ -1,9 +1,12 @@
-use std::fmt::Debug;
+use std::{fmt::Debug, ops::Deref};
 
 use bevy_color::Color;
 use bevy_math::Vec2;
 use bevy_reflect::{Reflect, prelude::ReflectDefault};
 
+/// Rounds the corners of an element's outer border edge.
+///
+/// <https://developer.mozilla.org/ocs/Web/CSS/Reference/Properties/border-radius>
 #[derive(Clone, Copy, Debug, Default, PartialEq, Reflect)]
 #[reflect(Clone, Default, PartialEq)]
 pub struct Corners<T>
@@ -188,4 +191,67 @@ impl BoxShadow {
         blur_radius: 50.0,
         spread_radius: -12.0,
     }];
+}
+
+/// How an image should fit within its container.
+///
+/// ```text
+/// uv = (uv - center) / scale + center
+/// ```
+///
+/// ## Examples
+///
+/// ```text
+/// uv = (uv - TopCenter) / scale + TopCenter
+/// ```
+///
+/// <https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/object-fit>
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
+pub enum ObjectFit {
+    /// Stretch to fill the container (ignores aspect ratio)
+    Fill,
+    /// Fit entirely within the container (maintains aspect ratio, may letterbox)
+    Contain,
+    /// Fill the container completely, cropping if necessary (maintains aspect ratio)
+    #[default]
+    Cover,
+    /// Scale down only if larger than container (maintains aspect ratio)
+    ScaleDown,
+    /// No scaling, maintain its original size
+    None,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Default, Reflect)]
+pub struct ObjectPosition(Vec2);
+
+impl ObjectPosition {
+    pub const TOP_LEFT: Self = Self(Vec2::ZERO);
+    pub const TOP_CENTER: Self = Self(Vec2::new(0.5, 0.0));
+    pub const TOP_RIGHT: Self = Self(Vec2::X);
+    pub const CENTER_LEFT: Self = Self(Vec2::new(0.0, 0.5));
+    pub const CENTER: Self = Self(Vec2::new(0.5, 0.5));
+    pub const CENTER_RIGHT: Self = Self(Vec2::new(1.0, 0.5));
+    pub const BOTTOM_LEFT: Self = Self(Vec2::Y);
+    pub const BOTTOM_CENTER: Self = Self(Vec2::new(0.5, 1.0));
+    pub const BOTTOM_RIGHT: Self = Self(Vec2::ONE);
+}
+
+impl From<Vec2> for ObjectPosition {
+    fn from(value: Vec2) -> Self {
+        Self(value)
+    }
+}
+
+impl From<ObjectPosition> for Vec2 {
+    fn from(value: ObjectPosition) -> Self {
+        value.0
+    }
+}
+
+impl Deref for ObjectPosition {
+    type Target = Vec2;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
 }

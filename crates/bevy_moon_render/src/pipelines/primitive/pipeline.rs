@@ -70,6 +70,8 @@ impl SpecializedRenderPipeline for UiPipeline {
                 VertexFormat::Float32x4,
                 // border widths
                 VertexFormat::Float32x4,
+                // image object fit parameters
+                VertexFormat::Float32x3,
             ],
         );
 

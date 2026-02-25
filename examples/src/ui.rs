@@ -4,7 +4,7 @@ use bevy::{
     prelude::*,
 };
 
-use bevy_moon::prelude::{BoxShadow, Corners, MoonPlugin, div, image};
+use bevy_moon::prelude::{BoxShadow, Corners, MoonPlugin, ObjectPosition, div, img};
 use taffy::{LengthPercentage, Rect};
 
 fn setup(
@@ -114,13 +114,13 @@ fn setup(
             .background(WHITE)
             .corner_radii(Corners::all(12.0))
             .shadow_md(),
-        image(asset_server.load("images/bevy.png")),
+        img(asset_server.load("images/bevy.png")),
         Transform::from_xyz(-150.0, -150.0, 0.0),
     ));
 
     commands.spawn((
         div()
-            .w(128.0)
+            .w(264.0)
             .h(128.0)
             .flex()
             .border(Rect {
@@ -131,11 +131,13 @@ fn setup(
             })
             .border_color(RED)
             .background(WHITE)
-            .corner_radii(Corners::all(12.0))
+            .corner_radii(Corners::all(48.0))
             .shadow_md(),
         children![(
-            div().flex().flex_auto(),
-            image(asset_server.load("images/bevy.png")),
+            div().flex().flex_auto().corner_radii(Corners::all(48.0)),
+            img(asset_server.load("images/bevy_logo_light.png"))
+                .scale_down()
+                .object_position(ObjectPosition::BOTTOM_RIGHT),
         )],
         Transform::from_xyz(150.0, 150.0, 0.0),
     ));
