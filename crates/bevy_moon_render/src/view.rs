@@ -133,7 +133,7 @@ pub fn extract_camera_views<const CAMERA_SUBVIEW: u32>(
             .insert(MoonUiCameraView(ui_camera_view))
             .insert(MoonUiOptions(mesh_key));
 
-        render_phases.insert_or_clear(retained_view_entity);
+        render_phases.prepare_for_new_frame(retained_view_entity);
         live_entities.insert(retained_view_entity);
     }
 

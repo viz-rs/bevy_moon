@@ -61,6 +61,7 @@ smallvec = { version = "1.0", features = ["union", "const_new"] }
 stacksafe = "1.0"
 taffy = "0.9"
 glam = "0.30"
+indexmap = "2"
 
 accesskit = "0.21"
 bytemuck = { version = "1.5", features = ["derive"] }

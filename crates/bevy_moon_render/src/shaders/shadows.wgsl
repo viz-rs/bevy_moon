@@ -1,7 +1,11 @@
 #import bevy_render::view::View
-#import bevy_moon::prelude::{FRAC_2_SQRT_PI, INVERT_SQRT_2, SQRT_PI_2}
-#import bevy_moon::utils::{normalize_vertex_index, get_vertex_by_index}
-#import bevy_moon::utils::{get_corner_index, get_inset_by_index}
+#import bevy_moon::maths::{FRAC_2_SQRT_PI, INVERT_SQRT_2, SQRT_PI_2}
+#import bevy_moon::quad::{
+    normalize_vertex_index,
+    get_vertex_by_index,
+    get_corner_index,
+    get_inset_by_index
+}
 #import bevy_moon::rectangles::{sd_rounded_box}
 
 @group(0) @binding(0) var<uniform> view: View;

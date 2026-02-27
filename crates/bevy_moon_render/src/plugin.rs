@@ -17,14 +17,15 @@ pub struct MoonRenderPlugin;
 
 impl Plugin for MoonRenderPlugin {
     fn build(&self, app: &mut bevy_app::App) {
-        load_shader_library!(app, "shaders/prelude.wgsl");
-        load_shader_library!(app, "shaders/flags.wgsl");
-        load_shader_library!(app, "shaders/corners.wgsl");
-        load_shader_library!(app, "shaders/rectangles.wgsl");
-        load_shader_library!(app, "shaders/utils.wgsl");
-        load_shader_library!(app, "shaders/images.wgsl");
+        load_shader_library!(app, "shaders/libs/flags.wgsl");
+        load_shader_library!(app, "shaders/libs/quad.wgsl");
+        load_shader_library!(app, "shaders/libs/maths.wgsl");
+        load_shader_library!(app, "shaders/libs/corners.wgsl");
+        load_shader_library!(app, "shaders/libs/rectangles.wgsl");
+        load_shader_library!(app, "shaders/libs/atlas.wgsl");
+        load_shader_library!(app, "shaders/libs/utils.wgsl");
 
-        app.register_required_components::<Div, SyncToRenderWorld>();
+        // app.register_required_components::<Div, SyncToRenderWorld>();
 
         app.add_plugins(ExtractResourcePlugin::<UiStackMap>::default());
 

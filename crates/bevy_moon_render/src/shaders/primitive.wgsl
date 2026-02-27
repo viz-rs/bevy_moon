@@ -1,11 +1,16 @@
 #import bevy_render::view::View
-#import bevy_moon::flags::{TEXTURED, enabled}
-#import bevy_moon::utils::{is_all3, is_empty4, to_uv}
-#import bevy_moon::utils::{normalize_vertex_index, get_vertex_by_index}
-#import bevy_moon::utils::{get_corner_index, get_inset_by_index}
-#import bevy_moon::utils::{aa_c, aa_f, aa_s}
+#import bevy_moon::flags::{TEXTURED, GLYPH, enabled}
+#import bevy_moon::quad::{
+    normalize_vertex_index,
+    get_vertex_by_index, 
+    get_corner_index,
+    get_inset_by_index,
+    to_uv 
+}
+#import bevy_moon::utils::{is_all3, is_empty4}
+#import bevy_moon::utils::{aa_c, aa_s}
 #import bevy_moon::rectangles::{sd_rounded_box, sd_inset_rounded_box}
-#import bevy_moon::images
+#import bevy_moon::atlas
 
 @group(0) @binding(0) var<uniform> view: View;
 
@@ -68,15 +73,20 @@ fn vertex(in: VertexInput) -> VertexOutput {
 @fragment
 fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     var color = in.color;
-    
+
     // should split this into a standalone pipeline
     if enabled(in.flags, TEXTURED) {
         let src_size = vec2<f32>(textureDimensions(sprite_texture, 0));
         let dst_size = in.size;
         let position = in.object_fit.xy;
         let fit = u32(in.object_fit.z);
-        let uv = images::object_fit(in.uv, dst_size, src_size, position, fit);
         
+        let uv = select(
+          atlas::object_fit(in.uv, dst_size, src_size, position, fit),
+          atlas::glyph_tile_uv(in.uv, dst_size, src_size, position),
+          in.flags == GLYPH
+        );
+
         color *= textureSample(sprite_texture, sprite_sampler, uv);
     }
 
@@ -127,7 +137,6 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     // color.a *= mix(a, b, b); // Repair the blank gap caused by antiasing.
     
     // let c = aa_c(external_distance);
-    // let f = aa_f(external_distance);
     let s = aa_s(external_distance);
     
     color.a *= s;

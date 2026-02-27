@@ -116,10 +116,7 @@ impl SpecializedRenderPipeline for UiPipeline {
 pub fn init_ui_pipeline(mut commands: Commands, asset_server: Res<AssetServer>) {
     let view_layout = BindGroupLayoutDescriptor::new(
         "moon_ui_view_layout",
-        &BindGroupLayoutEntries::single(
-            ShaderStages::VERTEX_FRAGMENT,
-            uniform_buffer::<ViewUniform>(true),
-        ),
+        &BindGroupLayoutEntries::single(ShaderStages::VERTEX, uniform_buffer::<ViewUniform>(true)),
     );
 
     let texture_layout = BindGroupLayoutDescriptor::new(

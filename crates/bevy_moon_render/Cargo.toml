@@ -46,6 +46,7 @@ fixedbitset = { workspace = true }
 radsort = { workspace = true }
 smallvec = { workspace = true }
 stacksafe = { workspace = true }
+indexmap = { workspace = true }
 
 accesskit = { workspace = true }
 bytemuck = { workspace = true }

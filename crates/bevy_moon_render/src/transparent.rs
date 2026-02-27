@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use bevy_ecs::entity::Entity;
+use bevy_ecs::entity::{Entity, EntityHash};
 use bevy_math::FloatOrd;
 use bevy_render::{
     render_phase::{
@@ -9,7 +9,9 @@ use bevy_render::{
     },
     render_resource::CachedRenderPipelineId,
     sync_world::MainEntity,
+    view::ExtractedView,
 };
+use indexmap::IndexMap;
 
 /// Transparent UI [`SortedPhaseItem`]s.
 pub struct TransparentUi {
@@ -69,8 +71,15 @@ impl SortedPhaseItem for TransparentUi {
     }
 
     #[inline]
-    fn sort(items: &mut [Self]) {
-        items.sort_by_key(SortedPhaseItem::sort_key);
+    fn sort(items: &mut IndexMap<(Entity, MainEntity), Self, EntityHash>) {
+        items.sort_by_key(|_, value| value.sort_key());
+    }
+
+    fn recalculate_sort_keys(
+        _: &mut IndexMap<(Entity, MainEntity), Self, EntityHash>,
+        _: &ExtractedView,
+    ) {
+        // Sort keys are precalculated for UI phase items.
     }
 
     #[inline]
@@ -86,22 +95,24 @@ impl CachedRenderPipelinePhaseItem for TransparentUi {
     }
 }
 
-pub trait RenderPhasesFilter {
-    fn filter(&mut self, draw_function: DrawFunctionId)
-    -> impl Iterator<Item = &mut TransparentUi>;
+pub trait RenderPhasesFilter<I>
+where
+    I: SortedPhaseItem,
+{
+    fn filter(&mut self, draw_function: DrawFunctionId) -> impl Iterator<Item = &mut I>;
 }
 
-impl RenderPhasesFilter for ViewSortedRenderPhases<TransparentUi> {
-    fn filter(
-        &mut self,
-        draw_function: DrawFunctionId,
-    ) -> impl Iterator<Item = &mut TransparentUi> {
+impl<I> RenderPhasesFilter<I> for ViewSortedRenderPhases<I>
+where
+    I: SortedPhaseItem,
+{
+    fn filter(&mut self, draw_function: DrawFunctionId) -> impl Iterator<Item = &mut I> {
         self.values_mut()
             .flat_map(move |phase| {
                 phase
                     .items
-                    .iter_mut()
-                    .filter(move |item| item.draw_function == draw_function)
+                    .values_mut()
+                    .filter(move |item| item.draw_function() == draw_function)
             })
             .into_iter()
     }

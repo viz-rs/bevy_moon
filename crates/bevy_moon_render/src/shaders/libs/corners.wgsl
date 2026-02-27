@@ -5,8 +5,7 @@
 
 #define_import_path bevy_moon::corners
 
-#import bevy_render::maths::{HALF_PI}
-#import bevy_moon::prelude::{INVERT_HALF_PI, SQRT_2}
+#import bevy_moon::maths::{HALF_PI, INVERT_HALF_PI, SQRT_2}
 
 // Selects a corner shape by a kind
 //

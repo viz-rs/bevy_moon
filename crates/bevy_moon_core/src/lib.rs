@@ -12,6 +12,7 @@ pub mod prelude {
     pub use crate::components::computed::ComputedLayout;
     pub use crate::components::div::{Div, div};
     pub use crate::components::image::{Image, img};
+    pub use crate::components::text::{Text, text};
     pub use crate::layout::UiLayoutTree;
     pub use crate::measure::{Measure, MeasureArgs};
     pub use crate::plugin::MoonCorePlugin;

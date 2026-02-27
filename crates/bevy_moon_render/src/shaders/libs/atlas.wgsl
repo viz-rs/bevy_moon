@@ -1,4 +1,4 @@
-#define_import_path bevy_moon::images
+#define_import_path bevy_moon::atlas
 
 const FILL       = 0u;
 const CONTAIN    = 1u;
@@ -44,9 +44,20 @@ fn object_fit(uv: vec2<f32>, dst_size: vec2<f32>, src_size: vec2<f32>, center: v
     var out = (uv - center) * scale + center;
     
     // overflow handling
-    if any(out < vec2(0.0)) | any(out > vec2(1.0)) {
-        out = vec2(0.0);
+    if (any(out < vec2(0.0)) | any(out > vec2(1.0))) {
+        discard;
     }
     
     return out;
+}
+
+/// Calculates a glyph tile's uv within its container.
+///
+/// ```text
+/// uv = (glyph_top_left + uv * glyph_size) / texture_size
+/// uv = top_left / src_size + uv * scale
+/// ```
+fn glyph_tile_uv(uv: vec2<f32>, dst_size: vec2<f32>, src_size: vec2<f32>, top_left: vec2<f32>) -> vec2<f32> {
+    let scale = dst_size / src_size;
+    return uv * scale + top_left / src_size;
 }

@@ -4,7 +4,7 @@ use bevy::{
     prelude::*,
 };
 
-use bevy_moon::prelude::{BoxShadow, Corners, MoonPlugin, ObjectPosition, div, img};
+use bevy_moon::prelude::{BoxShadow, Corners, MoonPlugin, ObjectPosition, div, img, text};
 use taffy::{LengthPercentage, Rect};
 
 fn setup(
@@ -150,6 +150,21 @@ fn setup(
             .corner_radii(Corners::all(25.0).top_left(0.0).bottom_right(0.0))
             .shadow_sm(),
         Transform::from_xyz(100.0, -100.0, 0.0),
+    ));
+
+    commands.spawn((
+        div().w(216.0).h(29.0).background(GRAY),
+        text("Hello Moon Rust"),
+        TextColor::WHITE,
+        TextFont::default().with_font_size(24.0),
+        Transform::from_xyz(-100.0, 150.0, 0.0),
+    ));
+
+    commands.spawn((
+        text("A language empowering everyone to build reliable and efficient software."),
+        TextColor::BLACK,
+        TextFont::default().with_font_size(24.0),
+        Transform::from_xyz(-200.0, 200.0, 0.0),
     ));
 }
 
