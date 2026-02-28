@@ -1,6 +1,5 @@
 use std::{any::TypeId, ops::DerefMut};
 
-use bevy_asset::Assets;
 use bevy_camera::{Camera, visibility::VisibleEntities};
 use bevy_ecs::{
     change_detection::{DetectChanges, DetectChangesMut},
@@ -9,23 +8,23 @@ use bevy_ecs::{
     lifecycle::RemovedComponents,
     query::{Changed, With, Without},
     schedule::SystemSet,
-    system::{Local, Query, Res, ResMut},
+    system::{Commands, Local, Query, Res, ResMut},
     world::Ref,
 };
 use bevy_math::{UVec2, Vec2};
-use bevy_text::{
-    ComputedTextBlock, Font, FontAtlasSet, FontCx, FontHinting, LayoutCx, LineBreak, RemSize,
-    ScaleCx, TextBounds, TextError, TextLayout, TextLayoutInfo, TextPipeline, TextReader,
-};
+use bevy_text::{ComputedTextBlock, FontCx};
 use bevy_transform::components::{GlobalTransform, Transform};
 use fixedbitset::FixedBitSet;
 use smallvec::SmallVec;
 use taffy::NodeId;
 
 use crate::{
-    components::{computed::ComputedLayout, text::TextFlags},
+    components::{
+        computed::{ComputedLayout, ComputedTargetInfo},
+        content_size::ContentSize,
+    },
     layout::UiLayoutTree,
-    prelude::{Div, Text},
+    prelude::Div,
     stack::{UiStack, UiStackMap},
 };
 
@@ -36,6 +35,29 @@ pub enum UiSystems {
     Stack,
     Layout,
     PostLayout,
+}
+
+pub fn ui_target_info_system(
+    mut commands: Commands,
+    mut camera_query: Query<&Camera>,
+    ui_stack_map: Res<UiStackMap>,
+) {
+    for &camera_entity in ui_stack_map.keys() {
+        let Ok(camera) = camera_query.get_mut(camera_entity) else {
+            continue;
+        };
+
+        let scale_factor = camera.target_scaling_factor().unwrap_or(1.0);
+        let physical_size = camera
+            .physical_viewport_size()
+            .unwrap_or(UVec2::ZERO)
+            .as_vec2();
+
+        commands.entity(camera_entity).insert(ComputedTargetInfo {
+            scale_factor,
+            physical_size,
+        });
+    }
 }
 
 pub fn ui_stack_system(
@@ -155,8 +177,24 @@ fn update_ui_stack_recursive(
 
 pub fn ui_layout_system(
     camera_query: Query<&Camera>,
-    root_div_query: Query<(Entity, Ref<Div>, Option<&Children>), Without<ChildOf>>,
-    div_query: Query<(Entity, Ref<Div>, Option<&Children>), With<ChildOf>>,
+    root_div_query: Query<
+        (
+            Entity,
+            Ref<Div>,
+            Option<Ref<ContentSize>>,
+            Option<Ref<Children>>,
+        ),
+        Without<ChildOf>,
+    >,
+    div_query: Query<
+        (
+            Entity,
+            Ref<Div>,
+            Option<Ref<ContentSize>>,
+            Option<Ref<Children>>,
+        ),
+        With<ChildOf>,
+    >,
     ui_stack_map: Res<UiStackMap>,
     mut ui_layout_tree: ResMut<UiLayoutTree>,
     mut layouts: Local<SmallVec<[taffy::NodeId; 4]>>,
@@ -229,11 +267,24 @@ pub fn ui_layout_system(
 }
 
 fn update_ui_layout_recursive(
-    div_query: &Query<(Entity, Ref<Div>, Option<&Children>), With<ChildOf>>,
+    div_query: &Query<
+        (
+            Entity,
+            Ref<Div>,
+            Option<Ref<ContentSize>>,
+            Option<Ref<Children>>,
+        ),
+        With<ChildOf>,
+    >,
     changed_children_query: &Query<(), (Changed<Children>, With<Div>)>,
     ui_layout_tree: &mut UiLayoutTree,
     layouts: &mut SmallVec<[NodeId; 4]>,
-    (entity, div, children): (Entity, Ref<Div>, Option<&Children>),
+    (entity, div, content_size, children): (
+        Entity,
+        Ref<Div>,
+        Option<Ref<ContentSize>>,
+        Option<Ref<Children>>,
+    ),
 ) {
     // Stores current node's layout id and index.
     let mut node = Option::<(NodeId, usize)>::None;
@@ -241,10 +292,17 @@ fn update_ui_layout_recursive(
     let is_changed = div.is_added()
         || div.is_changed()
         || changed_children_query.contains(entity)
+        || content_size
+            .as_ref()
+            .is_some_and(|c| c.is_changed() && c.measure.is_some())
         || !ui_layout_tree.contains(entity);
 
     if is_changed {
-        let node_id = ui_layout_tree.upsert_node(entity, div.style.clone(), div.measure.clone());
+        let node_id = ui_layout_tree.upsert_node(
+            entity,
+            div.style.clone(),
+            content_size.and_then(|c| c.measure.clone()),
+        );
 
         layouts.push(node_id);
 
@@ -252,7 +310,7 @@ fn update_ui_layout_recursive(
     }
 
     if let Some(children) = children {
-        for div in div_query.iter_many(children) {
+        for div in div_query.iter_many(&children) {
             update_ui_layout_recursive(
                 div_query,
                 changed_children_query,
@@ -275,10 +333,23 @@ fn update_ui_layout_recursive(
 }
 
 fn update_ui_geometry_recursive(
-    div_query: &Query<(Entity, Ref<Div>, Option<&Children>), With<ChildOf>>,
+    div_query: &Query<
+        (
+            Entity,
+            Ref<Div>,
+            Option<Ref<ContentSize>>,
+            Option<Ref<Children>>,
+        ),
+        With<ChildOf>,
+    >,
     update_div_query: &mut Query<(&mut Transform, &mut ComputedLayout), With<Div>>,
     ui_layout_tree: &mut UiLayoutTree,
-    (entity, _, children): (Entity, Ref<Div>, Option<&Children>),
+    (entity, _, _, children): (
+        Entity,
+        Ref<Div>,
+        Option<Ref<ContentSize>>,
+        Option<Ref<Children>>,
+    ),
     mut maybe_inherited: Option<(Transform, Vec2)>,
 ) {
     let (Ok(layout), Ok((mut transform, mut computed_layout))) = (
@@ -333,7 +404,7 @@ fn update_ui_geometry_recursive(
         // Updates its children.
         maybe_inherited = Some((*transform, computed_layout.size));
 
-        for item in div_query.iter_many(children) {
+        for item in div_query.iter_many(&children) {
             update_ui_geometry_recursive(
                 div_query,
                 update_div_query,
@@ -341,174 +412,6 @@ fn update_ui_geometry_recursive(
                 item,
                 maybe_inherited,
             );
-        }
-    }
-}
-
-#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
-pub(super) struct AmbiguousWithText;
-
-#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
-pub(super) struct AmbiguousWithUpdateText2dLayout;
-
-pub fn measure_text_system(
-    fonts: Res<Assets<Font>>,
-    mut text_query: Query<
-        (
-            Entity,
-            Ref<TextLayout>,
-            Ref<FontHinting>,
-            // &mut ContentSize,
-            &mut TextFlags,
-            &mut ComputedTextBlock,
-            // Ref<ComputedUiRenderTargetInfo>,
-            &ComputedLayout,
-        ),
-        With<Div>,
-    >,
-    mut text_reader: TextReader<Text>,
-    mut text_pipeline: ResMut<TextPipeline>,
-    mut font_system: ResMut<FontCx>,
-    mut layout_cx: ResMut<LayoutCx>,
-    rem_size: Res<RemSize>,
-) {
-    for (
-        entity,
-        block,
-        font_hinting,
-        // mut content_size,
-        mut text_flags,
-        mut computed_text_block,
-        // computed_target,
-        computed_layout,
-    ) in &mut text_query
-    {
-        // Note: the ComputedTextBlock::needs_rerender bool is cleared in create_text_measure().
-        // 1e-5 epsilon to ignore tiny scale factor float errors
-        // if !(1e-5
-        //     < (computed_target.scale_factor() - computed_node.inverse_scale_factor.recip()).abs()
-        //     || computed.needs_rerender(computed_target.is_changed(), rem_size.is_changed())
-        //     || text_flags.needs_measure_fn
-        //     || content_size.is_added())
-        // {
-        //     continue;
-        // }
-
-        match text_pipeline.create_text_measure(
-            entity,
-            fonts.as_ref(),
-            text_reader.iter(entity),
-            1.0,
-            // computed_target.scale_factor,
-            &block,
-            computed_text_block.as_mut(),
-            &mut font_system,
-            &mut layout_cx,
-            // computed_target.logical_size(),
-            Vec2::new(1024.0, 1024.0) * 2.0,
-            rem_size.0,
-        ) {
-            Ok(measure) => {
-                if block.linebreak == LineBreak::NoWrap {
-                    // content_size.set(NodeMeasure::Fixed(FixedMeasure { size: measure.max }));
-                } else {
-                    // content_size.set(NodeMeasure::Text(TextMeasure { info: measure }));
-                }
-
-                // Text measure func created successfully, so set `TextNodeFlags` to schedule a recompute
-                text_flags.needs_measure_fn = false;
-                text_flags.needs_recompute = true;
-            }
-            Err(
-                TextError::NoSuchFont
-                | TextError::NoSuchFontFamily(_)
-                | TextError::DegenerateScaleFactor,
-            ) => {
-                // Try again next frame
-                text_flags.needs_measure_fn = true;
-            }
-            Err(
-                e @ (TextError::FailedToAddGlyph(_)
-                | TextError::FailedToGetGlyphImage(_)
-                | TextError::MissingAtlasLayout
-                | TextError::MissingAtlasTexture
-                | TextError::InconsistentAtlasState),
-            ) => {
-                panic!("Fatal error when processing text: {e}.");
-            }
-        };
-    }
-}
-
-pub fn text_system(
-    mut textures: ResMut<Assets<bevy_image::Image>>,
-    mut font_atlas_set: ResMut<FontAtlasSet>,
-    mut text_pipeline: ResMut<TextPipeline>,
-    mut text_query: Query<(
-        Ref<ComputedLayout>,
-        &TextLayout,
-        &mut TextLayoutInfo,
-        &mut TextFlags,
-        &mut ComputedTextBlock,
-        Ref<FontHinting>,
-    )>,
-    mut scale_cx: ResMut<ScaleCx>,
-) {
-    for (node, block, mut text_layout_info, mut text_flags, mut computed, hinting) in
-        &mut text_query
-    {
-        if node.is_changed() || text_flags.needs_recompute || hinting.is_changed() {
-            // Skip the text node if it is waiting for a new measure func
-            if text_flags.needs_measure_fn {
-                continue;
-            }
-
-            // let physical_node_size = if block.linebreak == LineBreak::NoWrap {
-            //     // With `NoWrap` set, no constraints are placed on the width of the text.
-            //     TextBounds::UNBOUNDED
-            // } else {
-            //     // `scale_factor` is already multiplied by `UiScale`
-            //     TextBounds::new(node.unrounded_size.x, node.unrounded_size.y)
-            // };
-            let physical_node_size = TextBounds::UNBOUNDED;
-
-            match text_pipeline.update_text_layout_info(
-                &mut text_layout_info,
-                &mut font_atlas_set,
-                &mut textures,
-                &mut computed,
-                &mut scale_cx,
-                physical_node_size,
-                block.justify,
-                *hinting,
-            ) {
-                Err(
-                    TextError::NoSuchFont
-                    | TextError::NoSuchFontFamily(_)
-                    | TextError::DegenerateScaleFactor,
-                ) => {
-                    // There was an error processing the text layout, try again next frame
-                    text_flags.needs_recompute = true;
-                }
-                Err(e @ TextError::FailedToGetGlyphImage(_)) => {
-                    bevy_log::warn_once!("{e}.");
-                    text_flags.needs_recompute = false;
-                    text_layout_info.clear();
-                }
-                Err(
-                    e @ (TextError::FailedToAddGlyph(_)
-                    | TextError::MissingAtlasLayout
-                    | TextError::MissingAtlasTexture
-                    | TextError::InconsistentAtlasState),
-                ) => {
-                    panic!("Fatal error when processing text: {e}.");
-                }
-                Ok(()) => {
-                    // text_layout_info.scale_factor = node.inverse_scale_factor().recip();
-                    // text_layout_info.size *= node.inverse_scale_factor();
-                    text_flags.needs_recompute = false;
-                }
-            }
         }
     }
 }

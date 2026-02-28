@@ -6,10 +6,7 @@ use smallvec::SmallVec;
 use taffy::*;
 
 use super::computed::ComputedLayout;
-use crate::{
-    measure::NodeContext,
-    style::{BoxShadow, Corners},
-};
+use crate::style::{BoxShadow, Corners};
 
 #[derive(Component, Clone, Debug, Reflect)]
 #[require(Transform, ComputedLayout)]
@@ -24,9 +21,6 @@ pub struct Div {
 
     #[reflect(ignore, clone)]
     pub(crate) style: Style,
-
-    #[reflect(ignore, clone)]
-    pub measure: Option<NodeContext>,
 
     pub background: Option<Color>,
     pub corner_radii: Corners<f32>,
@@ -47,7 +41,6 @@ impl Div {
     pub const DEFAULT: Self = Self {
         style: Style::DEFAULT,
         stack_index: 0,
-        measure: None,
         background: None,
         corner_radii: Corners::DEFAULT,
         border_color: None,

@@ -35,3 +35,7 @@ fn aa_s(d: f32) -> f32 {
     let t = d / AA_T / 0.5;
     return smoothstep(0.0, 1.0, 0.5 - t);
 }
+
+fn contour(d: f32, width: f32) -> f32 {
+    return smoothstep(0.5 - width, 0.5 + width, d);
+}

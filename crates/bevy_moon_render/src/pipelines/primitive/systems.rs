@@ -8,7 +8,7 @@ use bevy_ecs::{
     system::{Commands, Query, ResMut},
 };
 use bevy_image::TRANSPARENT_IMAGE_HANDLE;
-use bevy_math::{Affine3A, Vec2};
+use bevy_math::{Affine3A, Vec2, Vec3};
 use bevy_render::{Extract, sync_world::TemporaryRenderEntity};
 use bevy_text::{ComputedTextBlock, GlyphAtlasInfo, PositionedGlyph, TextColor, TextLayoutInfo};
 use bevy_transform::components::GlobalTransform;
@@ -110,7 +110,8 @@ fn extract_single_div(
             corner_radii,
             border_color,
             border_widths,
-            object_fit: [0.0; 3],
+            extra: [0.0; 3],
+            flip: [0; 2],
         },
     });
 }
@@ -178,9 +179,10 @@ fn extract_single_image(
     let corner_radii = div.corner_radii.to_array(); // should be computed_layout.corner_radii
     let border_color = Color::NONE.to_linear().to_f32_array(); // ignore border color
     let border_widths = computed_layout.border_widths.to_array();
-    let object_fit = (*image.object_position)
+    let extra = (*image.object_position)
         .extend(image.object_fit as isize as f32)
         .to_array();
+    let flip = image.flip;
 
     let render_entity = commands.spawn(TemporaryRenderEntity).id();
 
@@ -198,7 +200,8 @@ fn extract_single_image(
             corner_radii,
             border_color,
             border_widths,
-            object_fit,
+            extra,
+            flip,
         },
     });
 }
@@ -270,13 +273,19 @@ fn extract_single_text(
         return;
     }
 
+    let scale_factor = text_layout_info.scale_factor;
+    let scale_factor_recip = scale_factor.recip();
+    let offset = computed_layout.size * Vec2::new(-0.5, 0.5);
+    let affine = transform.affine()
+        * Affine3A::from_translation(offset.extend(0.0))
+        * Affine3A::from_scale(Vec3::splat(scale_factor_recip));
+
     let index = div.stack_index as f32 + 0.06;
     let main_entity = entity.into();
-    let size = computed_layout.size * Vec2::new(-0.5, 0.5);
-    let affine = transform.affine() * Affine3A::from_translation(size.extend(0.0));
     let corner_radii = div.corner_radii.to_array();
     let border_color = [0.0; 4];
     let border_widths = [0.0; 4];
+    let flip = [0; 2];
 
     let mut color = text_color.to_linear();
     let mut current_span = usize::MAX;
@@ -303,13 +312,13 @@ fn extract_single_text(
         }
 
         let color = color.to_f32_array();
-        let size = rect.size().to_array();
-        let object_fit = [rect.min.x, rect.min.y, 0.0]; // glyph tile's top-left position
+        let top_left = rect.min * scale_factor_recip;
+        let size = (rect.size() * scale_factor_recip).to_array();
+        let extra = [top_left.x, top_left.y, scale_factor_recip]; // glyph tile's top-left position
 
-        let position = (affine
-            * Affine3A::from_translation(((position) * Vec2::new(1.0, -1.0)).extend(0.0)))
-        .translation
-        .to_array();
+        let position = affine
+            .transform_point3((position * Vec2::new(1.0, -1.0)).extend(0.0))
+            .to_array();
 
         let render_entity = commands.spawn(TemporaryRenderEntity).id();
 
@@ -327,7 +336,8 @@ fn extract_single_text(
                 corner_radii,
                 border_color,
                 border_widths,
-                object_fit,
+                extra,
+                flip,
             },
         });
     }

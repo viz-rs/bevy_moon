@@ -7,14 +7,10 @@ use bevy_ecs::schedule::IntoScheduleConfigs;
 use bevy_transform::TransformSystems;
 
 use crate::{
-    components::div::Div,
+    components::{div::Div, text},
     layout::UiLayoutTree,
-    prelude::Text,
     stack::UiStackMap,
-    systems::{
-        AmbiguousWithText, AmbiguousWithUpdateText2dLayout, UiSystems, measure_text_system,
-        text_system, ui_layout_system, ui_stack_system,
-    },
+    systems::{UiSystems, ui_layout_system, ui_stack_system, ui_target_info_system},
 };
 
 pub struct MoonCorePlugin;
@@ -43,11 +39,12 @@ impl Plugin for MoonCorePlugin {
         app.add_systems(
             PostUpdate,
             (
-                ui_stack_system
+                (ui_stack_system, ui_target_info_system)
+                    .chain()
                     .in_set(UiSystems::Stack)
                     // These systems don't care about stack index
-                    .ambiguous_with(measure_text_system)
-                    .in_set(AmbiguousWithText),
+                    .ambiguous_with(text::measure_text_system)
+                    .in_set(text::AmbiguousWithText),
                 ui_layout_system
                     .in_set(UiSystems::Layout)
                     .before(TransformSystems::Propagate)
@@ -63,8 +60,8 @@ impl Plugin for MoonCorePlugin {
                 PostUpdate,
                 (
                     (
-                        bevy_text::detect_text_needs_rerender::<Text>,
-                        measure_text_system,
+                        bevy_text::detect_text_needs_rerender::<text::Text>,
+                        text::measure_text_system,
                     )
                         .chain()
                         .after(bevy_text::load_font_assets_into_font_collection)
@@ -77,7 +74,7 @@ impl Plugin for MoonCorePlugin {
                         // Since both systems will only ever insert new [`Image`] assets,
                         // they will never observe each other's effects.
                         .ambiguous_with(bevy_sprite::update_text2d_layout),
-                    text_system
+                    text::text_system
                         .in_set(UiSystems::PostLayout)
                         .after(bevy_text::load_font_assets_into_font_collection)
                         .after(bevy_asset::AssetEventSystems)
@@ -92,11 +89,15 @@ impl Plugin for MoonCorePlugin {
 
             // app.add_plugins(accessibilit::AccessibilityPlugin);
 
-            app.configure_sets(PostUpdate, AmbiguousWithText.ambiguous_with(text_system));
+            app.configure_sets(
+                PostUpdate,
+                text::AmbiguousWithText.ambiguous_with(text::text_system),
+            );
 
             app.configure_sets(
                 PostUpdate,
-                AmbiguousWithUpdateText2dLayout.ambiguous_with(bevy_sprite::update_text2d_layout),
+                text::AmbiguousWithUpdateText2dLayout
+                    .ambiguous_with(bevy_sprite::update_text2d_layout),
             );
         }
 

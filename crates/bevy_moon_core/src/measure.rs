@@ -1,8 +1,6 @@
-use std::{
-    fmt::Debug,
-    ops::{Deref, DerefMut},
-};
+use std::fmt::Debug;
 
+use bevy_derive::{Deref, DerefMut};
 use bevy_ecs::system::Query;
 use bevy_math::Vec2;
 use bevy_text::{ComputedTextBlock, FontCx};
@@ -32,27 +30,14 @@ pub trait Measure: Send + Sync + DynClone + 'static {
     }
 }
 
-pub struct NodeContext(StackSafe<Box<dyn Measure>>);
-
-impl Deref for NodeContext {
-    type Target = StackSafe<Box<dyn Measure>>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for NodeContext {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl Clone for NodeContext {
+impl Clone for Box<dyn Measure> {
     fn clone(&self) -> Self {
-        dyn_clone::clone(self)
+        dyn_clone::clone_box(&**self)
     }
 }
+
+#[derive(Clone, Deref, DerefMut)]
+pub struct NodeContext(StackSafe<Box<dyn Measure>>);
 
 impl Debug for NodeContext {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -66,5 +51,18 @@ impl NodeContext {
         M: Measure + Send + Sync + 'static,
     {
         Self(StackSafe::new(Box::new(measure)))
+    }
+}
+
+/// A `FixedMeasure` is a `Measure` that ignores all constraints and
+/// always returns the same size.
+#[derive(Default, Clone)]
+pub struct FixedMeasure {
+    pub size: Vec2,
+}
+
+impl Measure for FixedMeasure {
+    fn measure(&mut self, _: MeasureArgs, _: &taffy::Style) -> Vec2 {
+        self.size
     }
 }
