@@ -2434,6 +2434,7 @@ dependencies = [
  "bevy_moon",
  "bevy_moon_core",
  "bevy_moon_render",
+ "lucide-icons",
  "taffy",
  "tracing",
 ]
@@ -3141,6 +3142,12 @@ name = "log"
 version = "0.4.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5e5032e24019045c762d3c0f28f5b6b8bbf38563a65908389bf7978758920897"
+
+[[package]]
+name = "lucide-icons"
+version = "0.575.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7fe5ef57a7e2a313b5d15a2fe306a44acfe290247d5ff46af1780d1250b716fe"
 
 [[package]]
 name = "mach2"

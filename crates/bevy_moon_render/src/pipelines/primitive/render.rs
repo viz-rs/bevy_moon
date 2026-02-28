@@ -193,6 +193,7 @@ pub fn prepare_divs(
                 )
             });
 
+        // Todo(@fundon): should check if in a larger text case, it might be multiple textures in same entity
         batches
             .entry(render_entity)
             .and_modify(|batch| {

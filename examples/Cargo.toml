@@ -19,7 +19,9 @@ bevy_moon_core.workspace = true
 bevy_moon_render.workspace = true
 
 taffy.workspace = true
-tracing = { workspace = true }
+tracing.workspace = true
+
+lucide-icons.workspace = true
 
 [[example]]
 name = "ui"

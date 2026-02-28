@@ -1,6 +1,7 @@
-use std::{fmt::Debug, ops::Deref};
+use std::fmt::Debug;
 
 use bevy_color::Color;
+use bevy_derive::Deref;
 use bevy_math::Vec2;
 use bevy_reflect::{Reflect, prelude::ReflectDefault};
 
@@ -224,7 +225,7 @@ pub enum ObjectFit {
 /// How to align an image within its container.
 ///
 /// <https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/object-position>
-#[derive(Debug, Clone, Copy, PartialEq, Default, Reflect)]
+#[derive(Debug, Clone, Copy, PartialEq, Default, Reflect, Deref)]
 pub struct ObjectPosition(Vec2);
 
 impl ObjectPosition {
@@ -248,13 +249,5 @@ impl From<Vec2> for ObjectPosition {
 impl From<ObjectPosition> for Vec2 {
     fn from(value: ObjectPosition) -> Self {
         value.0
-    }
-}
-
-impl Deref for ObjectPosition {
-    type Target = Vec2;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
     }
 }

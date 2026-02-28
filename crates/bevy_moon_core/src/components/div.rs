@@ -158,6 +158,16 @@ impl Div {
         self
     }
 
+    pub fn items_center(mut self) -> Self {
+        self.style.align_items = Some(AlignItems::Center);
+        self
+    }
+
+    pub fn justify_center(mut self) -> Self {
+        self.style.justify_content = Some(JustifyContent::Center);
+        self
+    }
+
     // Sizing
 
     /// Sets width with a given absolute length.

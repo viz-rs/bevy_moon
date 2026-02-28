@@ -6,6 +6,8 @@ use bevy::{
     prelude::*,
 };
 
+use lucide_icons::Icon;
+
 use bevy_moon::prelude::{BoxShadow, Corners, MoonPlugin, ObjectPosition, div, img, text};
 use taffy::{LengthPercentage, Rect};
 
@@ -15,6 +17,9 @@ fn setup(
     mut materials: ResMut<Assets<ColorMaterial>>,
     asset_server: Res<AssetServer>,
 ) {
+    let lucide_font = Font::try_from_bytes(lucide_icons::LUCIDE_FONT_BYTES.to_vec(), "Lucide");
+    let icon_font = asset_server.add(lucide_font);
+
     let font = asset_server.load::<Font>("fonts/FiraMono-Medium.ttf");
 
     commands.spawn((Camera2d, PanCamera::default()));
@@ -236,9 +241,29 @@ fn setup(
             text("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."),
             TextColor::BLACK,
             TextFont::default().with_font(font).with_font_size(24.0),
-          )
+          ),
         ],
         Transform::from_xyz(-450.0, 200.0, 0.0),
+    ));
+
+    commands.spawn((
+        div()
+            .w(50.0)
+            .h(50.0)
+            .flex_auto()
+            .items_center()
+            .justify_center()
+            .p_px()
+            .background(WHITE)
+            .shadow_lg(),
+        children![(
+            text(Icon::Bird.to_string()),
+            TextColor::BLACK,
+            TextFont::default()
+                .with_font(icon_font)
+                .with_font_size(24.0),
+            Transform::from_xyz(0.0, 0.0, 0.0),
+        )],
     ));
 }
 
