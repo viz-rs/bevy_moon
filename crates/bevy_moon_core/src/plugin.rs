@@ -7,10 +7,10 @@ use bevy_ecs::schedule::IntoScheduleConfigs;
 use bevy_transform::TransformSystems;
 
 use crate::{
-    components::div::Div,
+    components::{div::Div, text},
     layout::UiLayoutTree,
     stack::UiStackMap,
-    systems::{UiSystems, ui_layout_system, ui_stack_system},
+    systems::{UiSystems, ui_layout_system, ui_stack_system, ui_target_info_system},
 };
 
 pub struct MoonCorePlugin;
@@ -39,12 +39,67 @@ impl Plugin for MoonCorePlugin {
         app.add_systems(
             PostUpdate,
             (
-                ui_stack_system.in_set(UiSystems::Stack),
+                (ui_stack_system, ui_target_info_system)
+                    .chain()
+                    .in_set(UiSystems::Stack)
+                    // These systems don't care about stack index
+                    .ambiguous_with(text::measure_text_system)
+                    .in_set(text::AmbiguousWithText),
                 ui_layout_system
                     .in_set(UiSystems::Layout)
-                    .before(TransformSystems::Propagate),
+                    .before(TransformSystems::Propagate)
+                    // Text and Text2D operate on disjoint sets of entities
+                    .ambiguous_with(bevy_sprite::update_text2d_layout)
+                    .ambiguous_with(bevy_text::detect_text_needs_rerender::<bevy_sprite::Text2d>),
             ),
         );
+
+        // text interop
+        {
+            app.add_systems(
+                PostUpdate,
+                (
+                    (
+                        bevy_text::detect_text_needs_rerender::<text::Text>,
+                        text::measure_text_system,
+                    )
+                        .chain()
+                        .after(bevy_text::load_font_assets_into_font_collection)
+                        .in_set(UiSystems::Content)
+                        // Text and Text2d are independent.
+                        .ambiguous_with(
+                            bevy_text::detect_text_needs_rerender::<bevy_sprite::Text2d>,
+                        )
+                        // Potential conflict: `Assets<Image>`
+                        // Since both systems will only ever insert new [`Image`] assets,
+                        // they will never observe each other's effects.
+                        .ambiguous_with(bevy_sprite::update_text2d_layout),
+                    text::text_system
+                        .in_set(UiSystems::PostLayout)
+                        .after(bevy_text::load_font_assets_into_font_collection)
+                        .after(bevy_asset::AssetEventSystems)
+                        // Text2d and bevy_moon ui text are entirely on separate entities
+                        .ambiguous_with(
+                            bevy_text::detect_text_needs_rerender::<bevy_sprite::Text2d>,
+                        )
+                        .ambiguous_with(bevy_sprite::update_text2d_layout)
+                        .ambiguous_with(bevy_sprite::calculate_bounds_text2d),
+                ),
+            );
+
+            // app.add_plugins(accessibilit::AccessibilityPlugin);
+
+            app.configure_sets(
+                PostUpdate,
+                text::AmbiguousWithText.ambiguous_with(text::text_system),
+            );
+
+            app.configure_sets(
+                PostUpdate,
+                text::AmbiguousWithUpdateText2dLayout
+                    .ambiguous_with(bevy_sprite::update_text2d_layout),
+            );
+        }
 
         app.world_mut()
             .register_component_hooks::<Div>()

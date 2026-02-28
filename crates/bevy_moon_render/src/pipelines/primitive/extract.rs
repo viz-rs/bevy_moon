@@ -11,6 +11,8 @@ pub struct UiInstance {
     pub border_color: [f32; 4],
     pub border_widths: [f32; 4],
 
-    // image object fit parameters: [ObjectPosition.x, ObjectPosition.y, ObjectFit]
-    pub object_fit: [f32; 3],
+    // glyph: [left, top, scale]
+    // image: [ObjectPosition.x, ObjectPosition.y, ObjectFit]
+    pub extra: [f32; 3],
+    pub flip: [u32; 2],
 }

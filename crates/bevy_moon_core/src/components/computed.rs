@@ -49,3 +49,9 @@ impl ComputedLayout {
         self.border_widths = border.convert();
     }
 }
+
+#[derive(Component, Clone, Copy, Debug, PartialEq)]
+pub struct ComputedTargetInfo {
+    pub scale_factor: f32,
+    pub physical_size: Vec2,
+}

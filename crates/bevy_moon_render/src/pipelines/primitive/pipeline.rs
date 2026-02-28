@@ -70,8 +70,11 @@ impl SpecializedRenderPipeline for UiPipeline {
                 VertexFormat::Float32x4,
                 // border widths
                 VertexFormat::Float32x4,
-                // image object fit parameters
+                // glyph: [left, top, scale]
+                // image: [ObjectPosition.x, ObjectPosition.y, ObjectFit]
                 VertexFormat::Float32x3,
+                // flip
+                VertexFormat::Uint32x2,
             ],
         );
 
@@ -116,10 +119,7 @@ impl SpecializedRenderPipeline for UiPipeline {
 pub fn init_ui_pipeline(mut commands: Commands, asset_server: Res<AssetServer>) {
     let view_layout = BindGroupLayoutDescriptor::new(
         "moon_ui_view_layout",
-        &BindGroupLayoutEntries::single(
-            ShaderStages::VERTEX_FRAGMENT,
-            uniform_buffer::<ViewUniform>(true),
-        ),
+        &BindGroupLayoutEntries::single(ShaderStages::VERTEX, uniform_buffer::<ViewUniform>(true)),
     );
 
     let texture_layout = BindGroupLayoutDescriptor::new(
@@ -127,7 +127,8 @@ pub fn init_ui_pipeline(mut commands: Commands, asset_server: Res<AssetServer>) 
         &BindGroupLayoutEntries::sequential(
             ShaderStages::FRAGMENT,
             (
-                texture_2d(TextureSampleType::Float { filterable: true }),
+                texture_2d(TextureSampleType::Float { filterable: true })
+                    .visibility(ShaderStages::VERTEX_FRAGMENT),
                 sampler(SamplerBindingType::Filtering),
             ),
         ),

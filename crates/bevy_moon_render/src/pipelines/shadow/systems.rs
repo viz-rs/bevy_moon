@@ -4,11 +4,11 @@ use bevy_color::{Alpha, ColorToComponents};
 use bevy_ecs::{
     entity::Entity,
     prelude::Res,
-    system::{Query, ResMut},
+    system::{Commands, Query, ResMut},
 };
 use bevy_math::vec2;
 use bevy_moon_core::prelude::{ComputedLayout, Div, UiStackMap};
-use bevy_render::{Extract, sync_world::RenderEntity};
+use bevy_render::{Extract, sync_world::TemporaryRenderEntity};
 use bevy_transform::components::GlobalTransform;
 
 use crate::pipelines::{
@@ -17,12 +17,12 @@ use crate::pipelines::{
 };
 
 pub fn extract_shadows(
+    mut commands: Commands,
     mut extracted_ui_instances: ResMut<ExtractedUiShadows>,
     ui_stack_map: Extract<Res<UiStackMap>>,
     div_query: Extract<
         Query<(
             Entity,
-            RenderEntity,
             &GlobalTransform,
             &InheritedVisibility,
             &ComputedLayout,
@@ -38,15 +38,20 @@ pub fn extract_shadows(
             .iter()
             .flat_map(|range| div_query.iter_many(&ui_stack.entities[range.clone()]))
         {
-            extract_single_div(&mut extracted_ui_instances, div, camera_entity);
+            extract_single_div(
+                &mut commands,
+                &mut extracted_ui_instances,
+                div,
+                camera_entity,
+            );
         }
     }
 }
 
 fn extract_single_div(
+    commands: &mut Commands,
     extracted_ui_instances: &mut ExtractedUiShadows,
-    (entity, render_entity, transform, inherited_visibility, computed_layout, div): (
-        Entity,
+    (entity, transform, inherited_visibility, computed_layout, div): (
         Entity,
         &GlobalTransform,
         &InheritedVisibility,
@@ -88,6 +93,8 @@ fn extract_single_div(
 
         let blur_radius = shadow.blur_radius;
         let color = shadow.color.to_linear().to_f32_array();
+
+        let render_entity = commands.spawn(TemporaryRenderEntity).id();
 
         extracted_ui_instances.instances.push(ExtractedUiInstance {
             index,

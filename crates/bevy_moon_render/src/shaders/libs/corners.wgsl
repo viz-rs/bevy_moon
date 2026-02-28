@@ -5,8 +5,7 @@
 
 #define_import_path bevy_moon::corners
 
-#import bevy_render::maths::{HALF_PI}
-#import bevy_moon::prelude::{INVERT_HALF_PI, SQRT_2}
+#import bevy_moon::maths::{HALF_PI, INVERT_HALF_PI, SQRT_2}
 
 // Selects a corner shape by a kind
 //
@@ -49,12 +48,12 @@ fn sd_corner_cosine(uv: vec2<f32>) -> f32 {
         let t = 0.5 * (ta + tb);
         let y = t - p.x + (p.y - cos(t)) * sin(t);
         if (y < 0.0) {
-          ta = t;
+            ta = t;
         } else {
-          tb = t;
+            tb = t;
         }
     }
-    
+
     let qa = vec2(ta, cos(ta));
     let qb = vec2(tb, cos(tb));
     let pa = p - qa;
@@ -69,19 +68,19 @@ fn sd_corner_cosine(uv: vec2<f32>) -> f32 {
 fn sd_corner_cubic(uv: vec2<f32>) -> f32 {
     var ta = 0.0; 
     var tb = 1.0;
-    
+ 
     for (var i = 0; i < 12; i++ ) {
         let t = 0.5 * (ta + tb);
         let c = (t * t * (t - 3.0) + 2.0) / 3.0;
         let dc = t * (t - 2.0);
         let y = (uv.x - t) + (uv.y - c) * dc;
         if (y > 0.0 ) {
-          ta = t;
+            ta = t;
         } else {
-          tb = t;
+            tb = t;
         }
     }
-    
+
     let qa = vec2(ta, (ta * ta * (ta - 3.0) + 2.0) / 3.0);
     let qb = vec2(tb, (tb * tb * (tb - 3.0) + 2.0) / 3.0);
     let pa = uv - qa;

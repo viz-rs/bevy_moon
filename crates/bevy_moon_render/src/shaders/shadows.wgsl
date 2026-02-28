@@ -1,7 +1,11 @@
 #import bevy_render::view::View
-#import bevy_moon::prelude::{FRAC_2_SQRT_PI, INVERT_SQRT_2, SQRT_PI_2}
-#import bevy_moon::utils::{normalize_vertex_index, get_vertex_by_index}
-#import bevy_moon::utils::{get_corner_index, get_inset_by_index}
+#import bevy_moon::maths::{FRAC_2_SQRT_PI, INVERT_SQRT_2, SQRT_PI_2}
+#import bevy_moon::quad::{
+    normalize_vertex_index,
+    get_vertex_by_index,
+    get_corner_index,
+    get_inset_by_index
+}
 #import bevy_moon::rectangles::{sd_rounded_box}
 
 @group(0) @binding(0) var<uniform> view: View;
@@ -40,7 +44,7 @@ fn blur(point: vec2<f32>, half_size: vec2<f32>, radius: f32, sigma: f32) -> f32 
     let start = range.x;                
     let end = range.y;
     let step = (end - start) / f32(SAMPLES);
-    
+
     var y = start + step * 0.5;
     var alpha = 0.0;
     for (var i = 0; i < SAMPLES; i += 1) {
@@ -48,7 +52,7 @@ fn blur(point: vec2<f32>, half_size: vec2<f32>, radius: f32, sigma: f32) -> f32 
         alpha += blur * gaussian(y, sigma) * step;
         y += step;
     }
-    
+
     return alpha;
 }
 
@@ -83,7 +87,7 @@ fn blur7(point: vec2<f32>, half_size: vec2<f32>, radius: f32, sigma: f32) -> f32
     let start = range.x;                
     let end = range.y;
     let step = (end - start);
-    
+
     let v = INVERT_SQRT_2 / sigma;
     let d = sd_rounded_box(point, half_size, radius);
     let ranged = d + vec2(0.0, select(radius, 0.5, radius == 0.0) * step);
@@ -93,7 +97,7 @@ fn blur7(point: vec2<f32>, half_size: vec2<f32>, radius: f32, sigma: f32) -> f32
 
 struct VertexInput {
     @builtin(vertex_index) vertex_id: u32,
-    
+
     @location(0) position: vec3<f32>,
     @location(1) color: vec4<f32>,
     @location(2) size: vec2<f32>,
@@ -103,9 +107,9 @@ struct VertexInput {
 
 struct VertexOutput {
     @builtin(position) clip_position: vec4<f32>,
-    
+
     @location(0) local_position: vec2<f32>,
-    
+
     @location(1) @interpolate(flat) color: vec4<f32>,
     @location(2) @interpolate(flat) size: vec2<f32>,
     @location(3) @interpolate(flat) corner_radii: vec4<f32>,
@@ -140,15 +144,15 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     let blur_radius = in.blur_radius;
     let corner_index = get_corner_index(point);
     let radius = in.corner_radii[corner_index];
-    
+
     let a = blur7(point, half_size, radius, blur_radius);
     // let a = blur(point, half_size, radius, blur_radius);
-    
+
     var color = in.color;
-    
+
     // debug
     // color.a *= smoothstep(0.0, 0.25, a);
     color.a *= a;
-    
+
     return color;
 }

@@ -12,7 +12,10 @@ use bevy_text::{ComputedTextBlock, FontCx};
 use stacksafe::stacksafe;
 use taffy::{Layout, NodeId, Style, TaffyTree};
 
-use crate::measure::{MeasureArgs, NodeContext};
+use crate::{
+    components::text::TextMeasure,
+    measure::{MeasureArgs, NodeContext},
+};
 
 #[derive(Resource)]
 pub struct UiLayoutTree {
@@ -141,7 +144,7 @@ impl UiLayoutTree {
         &mut self,
         root_node_entity: Entity,
         physical_size: UVec2,
-        _text_block_query: &'a mut Query<&mut ComputedTextBlock>,
+        text_block_query: &'a mut Query<&mut ComputedTextBlock>,
         font_system: &'a mut FontCx,
     ) {
         let node_id = *self.node_map.entry(root_node_entity).or_insert_with(|| {
@@ -165,11 +168,10 @@ impl UiLayoutTree {
                         return taffy::Size::ZERO;
                     };
 
-                    // let text_buffer =
-                    //     TextMeasur::needs_buffer(known_dimensions.height, available_space.width)
-                    //         .then(|| node_context.get_text_buffer(text_block_query))
-                    //         .flatten();
-                    let text_buffer = None;
+                    let text_buffer =
+                        TextMeasure::needs_buffer(known_dimensions.height, available_space.width)
+                            .then(|| node_context.get_text_buffer(text_block_query))
+                            .flatten();
 
                     let args = MeasureArgs {
                         known_dimensions,

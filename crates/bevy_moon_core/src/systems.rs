@@ -8,7 +8,7 @@ use bevy_ecs::{
     lifecycle::RemovedComponents,
     query::{Changed, With, Without},
     schedule::SystemSet,
-    system::{Local, Query, Res, ResMut},
+    system::{Commands, Local, Query, Res, ResMut},
     world::Ref,
 };
 use bevy_math::{UVec2, Vec2};
@@ -19,7 +19,10 @@ use smallvec::SmallVec;
 use taffy::NodeId;
 
 use crate::{
-    components::computed::ComputedLayout,
+    components::{
+        computed::{ComputedLayout, ComputedTargetInfo},
+        content_size::ContentSize,
+    },
     layout::UiLayoutTree,
     prelude::Div,
     stack::{UiStack, UiStackMap},
@@ -32,6 +35,29 @@ pub enum UiSystems {
     Stack,
     Layout,
     PostLayout,
+}
+
+pub fn ui_target_info_system(
+    mut commands: Commands,
+    mut camera_query: Query<&Camera>,
+    ui_stack_map: Res<UiStackMap>,
+) {
+    for &camera_entity in ui_stack_map.keys() {
+        let Ok(camera) = camera_query.get_mut(camera_entity) else {
+            continue;
+        };
+
+        let scale_factor = camera.target_scaling_factor().unwrap_or(1.0);
+        let physical_size = camera
+            .physical_viewport_size()
+            .unwrap_or(UVec2::ZERO)
+            .as_vec2();
+
+        commands.entity(camera_entity).insert(ComputedTargetInfo {
+            scale_factor,
+            physical_size,
+        });
+    }
 }
 
 pub fn ui_stack_system(
@@ -151,8 +177,24 @@ fn update_ui_stack_recursive(
 
 pub fn ui_layout_system(
     camera_query: Query<&Camera>,
-    root_div_query: Query<(Entity, Ref<Div>, Option<&Children>), Without<ChildOf>>,
-    div_query: Query<(Entity, Ref<Div>, Option<&Children>), With<ChildOf>>,
+    root_div_query: Query<
+        (
+            Entity,
+            Ref<Div>,
+            Option<Ref<ContentSize>>,
+            Option<Ref<Children>>,
+        ),
+        Without<ChildOf>,
+    >,
+    div_query: Query<
+        (
+            Entity,
+            Ref<Div>,
+            Option<Ref<ContentSize>>,
+            Option<Ref<Children>>,
+        ),
+        With<ChildOf>,
+    >,
     ui_stack_map: Res<UiStackMap>,
     mut ui_layout_tree: ResMut<UiLayoutTree>,
     mut layouts: Local<SmallVec<[taffy::NodeId; 4]>>,
@@ -225,11 +267,24 @@ pub fn ui_layout_system(
 }
 
 fn update_ui_layout_recursive(
-    div_query: &Query<(Entity, Ref<Div>, Option<&Children>), With<ChildOf>>,
+    div_query: &Query<
+        (
+            Entity,
+            Ref<Div>,
+            Option<Ref<ContentSize>>,
+            Option<Ref<Children>>,
+        ),
+        With<ChildOf>,
+    >,
     changed_children_query: &Query<(), (Changed<Children>, With<Div>)>,
     ui_layout_tree: &mut UiLayoutTree,
     layouts: &mut SmallVec<[NodeId; 4]>,
-    (entity, div, children): (Entity, Ref<Div>, Option<&Children>),
+    (entity, div, content_size, children): (
+        Entity,
+        Ref<Div>,
+        Option<Ref<ContentSize>>,
+        Option<Ref<Children>>,
+    ),
 ) {
     // Stores current node's layout id and index.
     let mut node = Option::<(NodeId, usize)>::None;
@@ -237,10 +292,17 @@ fn update_ui_layout_recursive(
     let is_changed = div.is_added()
         || div.is_changed()
         || changed_children_query.contains(entity)
+        || content_size
+            .as_ref()
+            .is_some_and(|c| c.is_changed() && c.measure.is_some())
         || !ui_layout_tree.contains(entity);
 
     if is_changed {
-        let node_id = ui_layout_tree.upsert_node(entity, div.style.clone(), div.measure.clone());
+        let node_id = ui_layout_tree.upsert_node(
+            entity,
+            div.style.clone(),
+            content_size.and_then(|c| c.measure.clone()),
+        );
 
         layouts.push(node_id);
 
@@ -248,7 +310,7 @@ fn update_ui_layout_recursive(
     }
 
     if let Some(children) = children {
-        for div in div_query.iter_many(children) {
+        for div in div_query.iter_many(&children) {
             update_ui_layout_recursive(
                 div_query,
                 changed_children_query,
@@ -271,10 +333,23 @@ fn update_ui_layout_recursive(
 }
 
 fn update_ui_geometry_recursive(
-    div_query: &Query<(Entity, Ref<Div>, Option<&Children>), With<ChildOf>>,
+    div_query: &Query<
+        (
+            Entity,
+            Ref<Div>,
+            Option<Ref<ContentSize>>,
+            Option<Ref<Children>>,
+        ),
+        With<ChildOf>,
+    >,
     update_div_query: &mut Query<(&mut Transform, &mut ComputedLayout), With<Div>>,
     ui_layout_tree: &mut UiLayoutTree,
-    (entity, _, children): (Entity, Ref<Div>, Option<&Children>),
+    (entity, _, _, children): (
+        Entity,
+        Ref<Div>,
+        Option<Ref<ContentSize>>,
+        Option<Ref<Children>>,
+    ),
     mut maybe_inherited: Option<(Transform, Vec2)>,
 ) {
     let (Ok(layout), Ok((mut transform, mut computed_layout))) = (
@@ -329,7 +404,7 @@ fn update_ui_geometry_recursive(
         // Updates its children.
         maybe_inherited = Some((*transform, computed_layout.size));
 
-        for item in div_query.iter_many(children) {
+        for item in div_query.iter_many(&children) {
             update_ui_geometry_recursive(
                 div_query,
                 update_div_query,

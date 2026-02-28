@@ -30,6 +30,8 @@
  [-0.5,-0.5]               [0.5,-0.5]
 ```
 
+### Clip space
+
 ## Quad vertices
 
 Counter-clockwise order, starting from the `BottomLeft` corner.

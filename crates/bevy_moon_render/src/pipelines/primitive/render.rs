@@ -8,10 +8,12 @@ use bevy_math::FloatOrd;
 use bevy_moon_core::prelude::UiStackMap;
 use bevy_render::{
     render_asset::RenderAssets,
-    render_phase::{DrawFunctions, PhaseItem, PhaseItemExtraIndex, ViewSortedRenderPhases},
+    render_phase::{
+        DrawFunctionId, DrawFunctions, PhaseItem, PhaseItemExtraIndex, ViewSortedRenderPhases,
+    },
     render_resource::{BindGroupEntries, PipelineCache, SpecializedRenderPipelines},
     renderer::{RenderDevice, RenderQueue},
-    sync_world::MainEntity,
+    sync_world::{MainEntity, MainEntityHashMap},
     texture::GpuImage,
     view::{ExtractedView, ViewUniforms},
 };
@@ -76,7 +78,7 @@ pub fn queue_divs(
         let entity = div.entity;
         let sort_key = FloatOrd(div.index);
 
-        render_phase.add(TransparentUi {
+        render_phase.add_transient(TransparentUi {
             pipeline,
             draw_function,
             extracted_index,
@@ -127,6 +129,9 @@ pub fn prepare_divs(
     mut extracted_ui_instances: ResMut<ExtractedUiInstances>,
     mut texture_bind_groups: ResMut<UiTextureBindGroups>,
     mut render_phases: ResMut<ViewSortedRenderPhases<TransparentUi>>,
+    // maps `main entity` to `render entity`
+    mut live_entities: Local<MainEntityHashMap<Entity>>,
+    mut cached_draw_function: Local<Option<DrawFunctionId>>,
     mut previous_len: Local<usize>,
 ) {
     // If an image has changed, the GpuImage has (probably) changed
@@ -144,21 +149,27 @@ pub fn prepare_divs(
 
     ui_meta.instance_buffer.clear();
 
-    let draw_function = draw_functions.read().id::<DrawUi>();
+    let draw_function =
+        *cached_draw_function.get_or_insert_with(|| draw_functions.read().id::<DrawUi>());
 
-    let mut batches: EntityHashMap<UiInstanceBatch> = EntityHashMap::with_capacity(*previous_len);
+    let mut batches = EntityHashMap::<UiInstanceBatch>::with_capacity(*previous_len);
 
-    for item in render_phases.filter(draw_function) {
-        let Some(extracted_ui_instance) = extracted_ui_instances
+    for (item, (instance, texture)) in render_phases.filter(draw_function).filter_map(|item| {
+        extracted_ui_instances
             .instances
             .get(item.extracted_index)
-            .filter(|extracted_ui_instance| extracted_ui_instance.entity.0 == item.entity())
-        else {
-            continue;
-        };
-
-        let texture = extracted_ui_instance.texture;
-
+            // SAFETY: if remove the filter
+            // .filter(|extracted_ui_instance| extracted_ui_instance.entity.0 == item.entity())
+            .map(|extracted_ui_instance| {
+                (
+                    item,
+                    (
+                        extracted_ui_instance.instance,
+                        extracted_ui_instance.texture,
+                    ),
+                )
+            })
+    }) {
         let Some(gpu_image) = (texture != AssetId::invalid())
             .then(|| gpu_images.get(texture))
             .flatten()
@@ -166,7 +177,9 @@ pub fn prepare_divs(
             continue;
         };
 
-        let instance = extracted_ui_instance.instance;
+        let render_entity = *live_entities
+            .entry(item.main_entity())
+            .or_insert_with(|| item.entity());
 
         let index = ui_meta.instance_buffer.push(instance) as u32;
 
@@ -182,7 +195,7 @@ pub fn prepare_divs(
             });
 
         batches
-            .entry(item.entity())
+            .entry(render_entity)
             .and_modify(|batch| {
                 batch.range.end = index + 1;
                 // updates it with real texture
@@ -190,7 +203,7 @@ pub fn prepare_divs(
             })
             .or_insert_with(|| {
                 // only the first phase needs to be updated
-                // phases under the same entity are batch processed
+                // phases under the same entity will be batch processed
                 item.batch_range_mut().end += 1;
                 UiInstanceBatch::new(index..index + 1).with_texture(texture)
             });
@@ -204,4 +217,5 @@ pub fn prepare_divs(
     commands.try_insert_batch(batches);
 
     extracted_ui_instances.instances.clear();
+    live_entities.clear();
 }

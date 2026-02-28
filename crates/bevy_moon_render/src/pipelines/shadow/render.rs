@@ -6,10 +6,12 @@ use bevy_ecs::{
 use bevy_math::FloatOrd;
 use bevy_moon_core::prelude::UiStackMap;
 use bevy_render::{
-    render_phase::{DrawFunctions, PhaseItem, PhaseItemExtraIndex, ViewSortedRenderPhases},
+    render_phase::{
+        DrawFunctionId, DrawFunctions, PhaseItem, PhaseItemExtraIndex, ViewSortedRenderPhases,
+    },
     render_resource::{BindGroupEntries, PipelineCache, SpecializedRenderPipelines},
     renderer::{RenderDevice, RenderQueue},
-    sync_world::MainEntity,
+    sync_world::{MainEntity, MainEntityHashMap},
     view::{ExtractedView, ViewUniforms},
 };
 
@@ -35,7 +37,9 @@ pub fn queue_shadows(
     mut pipelines: ResMut<SpecializedRenderPipelines<UiShadowsPipeline>>,
     mut render_phases: ResMut<ViewSortedRenderPhases<TransparentUi>>,
 ) {
-    let draw_function = draw_functions.read().id::<DrawShadows>();
+    let Some(draw_function) = draw_functions.read().get_id::<DrawShadows>() else {
+        return;
+    };
 
     for (extracted_index, div) in extracted_ui_instances.instances.iter().enumerate() {
         let Some(ui_stack) = ui_stack_map.get(&div.camera_entity) else {
@@ -70,7 +74,7 @@ pub fn queue_shadows(
         let entity = div.entity;
         let sort_key = FloatOrd(div.index);
 
-        render_phase.add(TransparentUi {
+        render_phase.add_transient(TransparentUi {
             pipeline,
             draw_function,
             extracted_index,
@@ -116,35 +120,40 @@ pub fn prepare_shadows(
     mut ui_meta: ResMut<UiShadowMeta>,
     mut extracted_ui_instances: ResMut<ExtractedUiShadows>,
     mut render_phases: ResMut<ViewSortedRenderPhases<TransparentUi>>,
+    // maps `main entity` to `render entity`
+    mut live_entities: Local<MainEntityHashMap<Entity>>,
+    mut cached_draw_function: Local<Option<DrawFunctionId>>,
     mut previous_len: Local<usize>,
 ) {
     ui_meta.instance_buffer.clear();
 
-    let draw_function = draw_functions.read().id::<DrawShadows>();
+    let draw_function =
+        *cached_draw_function.get_or_insert_with(|| draw_functions.read().id::<DrawShadows>());
 
-    let mut batches: EntityHashMap<UiShadowBatch> = EntityHashMap::with_capacity(*previous_len);
+    let mut batches = EntityHashMap::<UiShadowBatch>::with_capacity(*previous_len);
 
-    for item in render_phases.filter(draw_function) {
-        let Some(extracted_ui_instance) = extracted_ui_instances
+    for (item, instance) in render_phases.filter(draw_function).filter_map(|item| {
+        extracted_ui_instances
             .instances
             .get(item.extracted_index)
-            .filter(|extracted_ui_instance| extracted_ui_instance.entity.0 == item.entity())
-        else {
-            continue;
-        };
-
-        let instance = extracted_ui_instance.instance;
+            // SAFETY: if remove the filter
+            // .filter(|extracted_ui_instance| extracted_ui_instance.entity.0 == item.entity())
+            .map(|extracted_ui_instance| (item, extracted_ui_instance.instance))
+    }) {
+        let render_entity = *live_entities
+            .entry(item.main_entity())
+            .or_insert_with(|| item.entity());
 
         let index = ui_meta.instance_buffer.push(instance) as u32;
 
         batches
-            .entry(item.entity())
+            .entry(render_entity)
             .and_modify(|batch| {
                 batch.range.end = index + 1;
             })
             .or_insert_with(|| {
                 // only the first phase needs to be updated
-                // phases under the same entity are batch processed
+                // phases under the same entity will be batch processed
                 item.batch_range_mut().end += 1;
                 UiShadowBatch::new(index..index + 1)
             });
@@ -158,4 +167,5 @@ pub fn prepare_shadows(
     commands.try_insert_batch(batches);
 
     extracted_ui_instances.instances.clear();
+    live_entities.clear();
 }

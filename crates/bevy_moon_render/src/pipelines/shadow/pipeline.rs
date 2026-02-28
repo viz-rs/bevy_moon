@@ -107,10 +107,7 @@ impl SpecializedRenderPipeline for UiShadowsPipeline {
 pub fn init_shadows_pipeline(mut commands: Commands, asset_server: Res<AssetServer>) {
     let view_layout = BindGroupLayoutDescriptor::new(
         "moon_ui_view_layout",
-        &BindGroupLayoutEntries::single(
-            ShaderStages::VERTEX_FRAGMENT,
-            uniform_buffer::<ViewUniform>(true),
-        ),
+        &BindGroupLayoutEntries::single(ShaderStages::VERTEX, uniform_buffer::<ViewUniform>(true)),
     );
 
     commands.insert_resource(UiShadowsPipeline {

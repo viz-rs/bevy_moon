@@ -4,7 +4,7 @@ use bevy::{
     prelude::*,
 };
 
-use bevy_moon::prelude::{BoxShadow, Corners, MoonPlugin, ObjectPosition, div, img};
+use bevy_moon::prelude::{BoxShadow, Corners, MoonPlugin, ObjectPosition, div, img, text};
 use taffy::{LengthPercentage, Rect};
 
 fn setup(
@@ -13,6 +13,8 @@ fn setup(
     mut materials: ResMut<Assets<ColorMaterial>>,
     asset_server: Res<AssetServer>,
 ) {
+    let font = asset_server.load::<Font>("fonts/FiraMono-Medium.ttf");
+
     commands.spawn((Camera2d, PanCamera::default()));
 
     commands.spawn((
@@ -102,8 +104,8 @@ fn setup(
 
     commands.spawn((
         div()
-            .w(128.0)
-            .h(128.0)
+            .w(64.0)
+            .h(64.0)
             .border(Rect {
                 top: LengthPercentage::length(2.0),
                 right: LengthPercentage::length(2.0),
@@ -115,7 +117,58 @@ fn setup(
             .corner_radii(Corners::all(12.0))
             .shadow_md(),
         img(asset_server.load("images/bevy.png")),
-        Transform::from_xyz(-150.0, -150.0, 0.0),
+        Transform::from_xyz(-200.0, -64.0, 0.0),
+    ));
+    commands.spawn((
+        div()
+            .w(64.0)
+            .h(64.0)
+            .border(Rect {
+                top: LengthPercentage::length(2.0),
+                right: LengthPercentage::length(2.0),
+                bottom: LengthPercentage::length(2.0),
+                left: LengthPercentage::length(2.0),
+            })
+            .border_color(RED)
+            .background(WHITE)
+            .corner_radii(Corners::all(12.0))
+            .shadow_md(),
+        img(asset_server.load("images/bevy.png")).flip_x(),
+        Transform::from_xyz(-200.0, -134.0, 0.0),
+    ));
+    commands.spawn((
+        div()
+            .w(64.0)
+            .h(64.0)
+            .border(Rect {
+                top: LengthPercentage::length(2.0),
+                right: LengthPercentage::length(2.0),
+                bottom: LengthPercentage::length(2.0),
+                left: LengthPercentage::length(2.0),
+            })
+            .border_color(RED)
+            .background(WHITE)
+            .corner_radii(Corners::all(12.0))
+            .shadow_md(),
+        img(asset_server.load("images/bevy.png")).flip_y(),
+        Transform::from_xyz(-200.0, -204.0, 0.0),
+    ));
+    commands.spawn((
+        div()
+            .w(64.0)
+            .h(64.0)
+            .border(Rect {
+                top: LengthPercentage::length(2.0),
+                right: LengthPercentage::length(2.0),
+                bottom: LengthPercentage::length(2.0),
+                left: LengthPercentage::length(2.0),
+            })
+            .border_color(RED)
+            .background(WHITE)
+            .corner_radii(Corners::all(12.0))
+            .shadow_md(),
+        img(asset_server.load("images/bevy.png")).flip_x().flip_y(),
+        Transform::from_xyz(-200.0, -274.0, 0.0),
     ));
 
     commands.spawn((
@@ -150,6 +203,29 @@ fn setup(
             .corner_radii(Corners::all(25.0).top_left(0.0).bottom_right(0.0))
             .shadow_sm(),
         Transform::from_xyz(100.0, -100.0, 0.0),
+    ));
+
+    commands.spawn((
+        div().w(216.0).h(29.0).background(GRAY),
+        text("Hello Bevy!"),
+        TextColor::WHITE,
+        TextFont::default()
+            .with_font(font.clone())
+            .with_font_size(24.0),
+        Transform::from_xyz(-100.0, 150.0, 0.0),
+    ));
+
+    commands.spawn((
+        div().w(250.0).flex().background(WHITE),
+        children![
+          (
+            div().w_full(),
+            text("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."),
+            TextColor::BLACK,
+            TextFont::default().with_font(font).with_font_size(24.0),
+          )
+        ],
+        Transform::from_xyz(-450.0, 200.0, 0.0),
     ));
 }
 
