@@ -190,7 +190,8 @@ fn setup(
             div().flex().flex_auto().corner_radii(Corners::all(48.0)),
             img(asset_server.load("images/bevy_logo_light.png"))
                 .object_fit_scale_down()
-                .object_position(ObjectPosition::BOTTOM_RIGHT),
+                .object_position(ObjectPosition::BOTTOM_RIGHT)
+                .flip_x(),
         )],
         Transform::from_xyz(150.0, 150.0, 0.0),
     ));
