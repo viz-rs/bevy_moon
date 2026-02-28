@@ -21,7 +21,7 @@ pub struct Image {
     pub handle: Handle<bevy_image::Image>,
     pub object_fit: ObjectFit,
     pub object_position: ObjectPosition,
-    pub flip: [u32; 2],
+    pub flip: [bool; 2],
 }
 
 impl Default for Image {
@@ -36,58 +36,46 @@ impl Image {
         handle: TRANSPARENT_IMAGE_HANDLE,
         object_fit: ObjectFit::Cover,
         object_position: ObjectPosition::CENTER,
-        flip: [0; 2],
+        flip: [false; 2],
     };
 
-    pub fn object_fit_fill(self) -> Self {
-        Self {
-            object_fit: ObjectFit::Fill,
-            ..self
-        }
+    pub fn object_fit_fill(mut self) -> Self {
+        self.object_fit = ObjectFit::Fill;
+        self
     }
 
-    pub fn object_fit_contain(self) -> Self {
-        Self {
-            object_fit: ObjectFit::Contain,
-            ..self
-        }
+    pub fn object_fit_contain(mut self) -> Self {
+        self.object_fit = ObjectFit::Contain;
+        self
     }
 
-    pub fn object_fit_cover(self) -> Self {
-        Self {
-            object_fit: ObjectFit::Cover,
-            ..self
-        }
+    pub fn object_fit_cover(mut self) -> Self {
+        self.object_fit = ObjectFit::Cover;
+        self
     }
 
-    pub fn object_fit_none(self) -> Self {
-        Self {
-            object_fit: ObjectFit::None,
-            ..self
-        }
+    pub fn object_fit_none(mut self) -> Self {
+        self.object_fit = ObjectFit::None;
+        self
     }
 
-    pub fn object_fit_scale_down(self) -> Self {
-        Self {
-            object_fit: ObjectFit::ScaleDown,
-            ..self
-        }
+    pub fn object_fit_scale_down(mut self) -> Self {
+        self.object_fit = ObjectFit::ScaleDown;
+        self
     }
 
-    pub fn object_position(self, position: ObjectPosition) -> Self {
-        Self {
-            object_position: position,
-            ..self
-        }
+    pub fn object_position(mut self, position: ObjectPosition) -> Self {
+        self.object_position = position;
+        self
     }
 
     pub fn flip_x(mut self) -> Self {
-        self.flip[0] = 1 - self.flip[0];
+        self.flip[0] ^= true;
         self
     }
 
     pub fn flip_y(mut self) -> Self {
-        self.flip[1] = 1 - self.flip[1];
+        self.flip[1] ^= true;
         self
     }
 }

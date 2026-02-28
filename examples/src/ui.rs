@@ -217,7 +217,7 @@ fn setup(
     ));
 
     commands.spawn((
-        div().w(250.0).flex().background(WHITE),
+        div().w(250.0).flex().p_px().background(WHITE).shadow_lg(),
         children![
           (
             div().w_full(),

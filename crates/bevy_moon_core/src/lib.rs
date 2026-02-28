@@ -1,5 +1,5 @@
 mod components;
-mod geometry;
+pub mod geometry;
 mod layout;
 mod measure;
 mod picking;
@@ -13,6 +13,7 @@ pub mod prelude {
     pub use crate::components::div::{Div, div};
     pub use crate::components::image::{Image, img};
     pub use crate::components::text::{Text, text};
+    pub use crate::geometry;
     pub use crate::layout::UiLayoutTree;
     pub use crate::measure::{Measure, MeasureArgs};
     pub use crate::plugin::MoonCorePlugin;

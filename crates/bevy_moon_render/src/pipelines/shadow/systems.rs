@@ -7,9 +7,13 @@ use bevy_ecs::{
     system::{Commands, Query, ResMut},
 };
 use bevy_math::vec2;
-use bevy_moon_core::prelude::{ComputedLayout, Div, UiStackMap};
 use bevy_render::{Extract, sync_world::TemporaryRenderEntity};
 use bevy_transform::components::GlobalTransform;
+
+use bevy_moon_core::{
+    geometry::FLIP_Y,
+    prelude::{ComputedLayout, Div, UiStackMap},
+};
 
 use crate::pipelines::{
     ExtractedUiInstance,
@@ -86,7 +90,7 @@ fn extract_single_div(
 
         let spread_radius = shadow.spread_radius;
         let spread = vec2(spread_radius, spread_radius * spread_ratio);
-        let offset = shadow.offset * vec2(1.0, -1.0); // Flip Y
+        let offset = shadow.offset * FLIP_Y;
 
         let shadow_size = size - spread * 2.0;
         let position = affine.translation.to_vec3() + offset.extend(0.0);

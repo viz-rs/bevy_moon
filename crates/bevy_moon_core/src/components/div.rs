@@ -237,7 +237,6 @@ impl Div {
 
     // Box Shadows
 
-    // Sets box shadows
     pub fn shadow(mut self, shadows: Vec<BoxShadow>) -> Self {
         self.box_shadow = Some(SmallVec::from_vec(shadows));
         self
@@ -280,6 +279,12 @@ impl Div {
 
     pub fn shadow_2xl(mut self) -> Self {
         self.box_shadow = Some(SmallVec::from_slice(&BoxShadow::XL2));
+        self
+    }
+
+    // Padding
+    pub fn p_px(mut self) -> Self {
+        self.style.padding = Rect::length(1.0);
         self
     }
 }
