@@ -62,7 +62,11 @@ fn glyph_tile_uv(uv: vec2<f32>, dst_size: vec2<f32>, src_size: vec2<f32>, top_le
     return uv * scale + top_left / src_size;
 }
 
-/// Flips a UV coordinate based on the flip vector.
+/// Flips the UV coordinate based on the flip vector.
+///
+/// ```text
+/// uv = mix(uv, vec2(1.0) - uv, vec2<f32>(flip))
+/// ```
 fn flip_uv(uv: vec2<f32>, flip: vec2<u32>) -> vec2<f32> {
     return select(uv, vec2(1.0) - uv, flip == vec2(1));
 }
