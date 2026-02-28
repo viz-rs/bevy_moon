@@ -132,7 +132,6 @@ pub fn prepare_divs(
     // maps `main entity` to `render entity`
     mut live_entities: Local<MainEntityHashMap<Entity>>,
     mut cached_draw_function: Local<Option<DrawFunctionId>>,
-    mut previous_len: Local<usize>,
 ) {
     // If an image has changed, the GpuImage has (probably) changed
     for event in &events.images {
@@ -152,7 +151,7 @@ pub fn prepare_divs(
     let draw_function =
         *cached_draw_function.get_or_insert_with(|| draw_functions.read().id::<DrawUi>());
 
-    let mut batches = EntityHashMap::<UiInstanceBatch>::with_capacity(*previous_len);
+    let mut batches = EntityHashMap::<UiInstanceBatch>::with_capacity(live_entities.capacity());
 
     for (item, (instance, texture)) in render_phases.filter(draw_function).filter_map(|item| {
         extracted_ui_instances
@@ -199,6 +198,9 @@ pub fn prepare_divs(
             .and_modify(|batch| {
                 batch.range.end = index + 1;
                 // updates it with real texture
+                if batch.texture == texture {
+                    return;
+                }
                 batch.texture = texture;
             })
             .or_insert_with(|| {
@@ -213,7 +215,6 @@ pub fn prepare_divs(
         .instance_buffer
         .write_buffer(&render_device, &render_queue);
 
-    *previous_len = batches.len();
     commands.try_insert_batch(batches);
 
     extracted_ui_instances.instances.clear();

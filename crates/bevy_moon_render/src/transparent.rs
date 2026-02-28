@@ -95,10 +95,12 @@ impl CachedRenderPipelinePhaseItem for TransparentUi {
     }
 }
 
+/// A [`ViewSortedRenderPhases`] filter trait.
 pub trait RenderPhasesFilter<I>
 where
     I: SortedPhaseItem,
 {
+    /// Filters the render phases based on the given draw function.
     fn filter(&mut self, draw_function: DrawFunctionId) -> impl Iterator<Item = &mut I>;
 }
 

@@ -123,14 +123,14 @@ pub fn prepare_shadows(
     // maps `main entity` to `render entity`
     mut live_entities: Local<MainEntityHashMap<Entity>>,
     mut cached_draw_function: Local<Option<DrawFunctionId>>,
-    mut previous_len: Local<usize>,
 ) {
     ui_meta.instance_buffer.clear();
 
     let draw_function =
         *cached_draw_function.get_or_insert_with(|| draw_functions.read().id::<DrawShadows>());
 
-    let mut batches = EntityHashMap::<UiShadowBatch>::with_capacity(*previous_len);
+    dbg!(live_entities.capacity());
+    let mut batches = EntityHashMap::<UiShadowBatch>::with_capacity(live_entities.capacity());
 
     for (item, instance) in render_phases.filter(draw_function).filter_map(|item| {
         extracted_ui_instances
@@ -163,7 +163,6 @@ pub fn prepare_shadows(
         .instance_buffer
         .write_buffer(&render_device, &render_queue);
 
-    *previous_len = batches.len();
     commands.try_insert_batch(batches);
 
     extracted_ui_instances.instances.clear();
