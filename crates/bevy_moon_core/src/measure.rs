@@ -56,13 +56,13 @@ impl NodeContext {
 
 /// A `FixedMeasure` is a `Measure` that ignores all constraints and
 /// always returns the same size.
-#[derive(Default, Clone)]
+#[derive(Clone)]
 pub struct FixedMeasure {
     pub size: Vec2,
 }
 
 impl Measure for FixedMeasure {
-    fn measure(&mut self, _: MeasureArgs, _: &taffy::Style) -> Vec2 {
+    fn measure(&mut self, _: MeasureArgs, _: &Style) -> Vec2 {
         self.size
     }
 }

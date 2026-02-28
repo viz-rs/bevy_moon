@@ -133,15 +133,17 @@ impl Measure for TextMeasure {
             text_buffer,
         } = args;
 
-        let scale_fn = |v| v * self.scale_factor;
-
-        // should scale up layout's arguments
-        let width = width.map(scale_fn);
-        let height = height.map(scale_fn);
-
-        // it has been scaled in text
+        // it has been scaled in text layout engine
         let min = self.min;
         let max = self.max;
+        let scale_factor = self.scale_factor;
+
+        let scale_up_fn = |v| v * scale_factor;
+        let scale_down_fn = |v| v * scale_factor.recip();
+
+        // should scale up layout's arguments
+        let width = width.map(scale_up_fn);
+        let height = height.map(scale_up_fn);
 
         let x = match width {
             Some(x) => x,
@@ -153,7 +155,7 @@ impl Measure for TextMeasure {
                     // the "max content width" when soft-wrapping right-aligned text
                     // and possibly other situations.
 
-                    scale_fn(x).max(min.x).min(max.x)
+                    scale_up_fn(x).max(min.x).min(max.x)
                 }
             },
         };
@@ -183,7 +185,7 @@ impl Measure for TextMeasure {
         };
 
         // should scale down the size before returning
-        (size / self.scale_factor).ceil()
+        scale_down_fn(size).ceil()
     }
 
     fn get_text_buffer<'a>(
@@ -247,8 +249,8 @@ pub fn measure_text_system(
 
         let is_changed = computed_text_block
             .needs_rerender(computed_layout.is_changed(), rem_size.is_changed())
-            || text_flags.needs_measure_fn
-            || content_size.is_added();
+            || content_size.is_added()
+            || text_flags.needs_measure_fn;
 
         if !is_changed {
             continue;
@@ -369,6 +371,8 @@ pub fn text_system(
             // With `NoWrap` set, no constraints are placed on the width of the text.
             TextBounds::UNBOUNDED
         } else {
+            // We currently don't compute the size of the div with a scale factor,
+            // so should apply the scale factor to the text layout engine.
             TextBounds::from(computed_layout.size * scale_factor)
         };
 

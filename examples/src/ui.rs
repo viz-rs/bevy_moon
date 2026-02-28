@@ -1,6 +1,8 @@
 use bevy::{
     camera_controller::pan_camera::{PanCamera, PanCameraPlugin},
-    color::palettes::css::{BLACK, BLUE, GRAY, GREEN, PINK, RED, WHITE},
+    color::palettes::css::{
+        ANTIQUE_WHITE, BLACK, BLUE, GRAY, GREEN, PINK, RED, WHITE, WHITE_SMOKE,
+    },
     prelude::*,
 };
 
@@ -214,6 +216,16 @@ fn setup(
             .with_font(font.clone())
             .with_font_size(24.0),
         Transform::from_xyz(-100.0, 150.0, 0.0),
+    ));
+
+    commands.spawn((
+        div().w(216.0).h(29.0).background(ANTIQUE_WHITE),
+        text("Hello Moon!"),
+        TextColor::BLACK,
+        TextFont::default()
+            .with_font(font.clone())
+            .with_font_size(24.0),
+        Transform::from_xyz(-100.0, 150.0 - 29.0, 0.0),
     ));
 
     commands.spawn((
