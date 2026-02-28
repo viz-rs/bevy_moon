@@ -48,6 +48,7 @@ struct VertexOutput {
     @location(6) @interpolate(flat) border_color: vec4<f32>,
     @location(7) @interpolate(flat) border_widths: vec4<f32>,
     @location(8) @interpolate(flat) extra: vec3<f32>,
+    @location(9) @interpolate(flat) flip: vec2<u32>,
 };
 
 @vertex
@@ -55,7 +56,7 @@ fn vertex(in: VertexInput) -> VertexOutput {
     let vertex_index = normalize_vertex_index(in.vertex_id);
     let vertex = get_vertex_by_index(vertex_index);
 
-    let uv = atlas::flip_uv(to_uv(vertex_index), in.flip);
+    let uv = to_uv(vertex_index);
     let local_position = vertex * in.size;
     let world_position = in.position.xyz + vec3(local_position, 0.0);
     let clip_position = view.clip_from_world * vec4(world_position, 1.0);
@@ -71,6 +72,7 @@ fn vertex(in: VertexInput) -> VertexOutput {
         in.border_color,
         in.border_widths,
         in.extra,
+        in.flip
     );
 }
 
@@ -80,6 +82,8 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
 
     // should split this into a standalone pipeline
     if (enabled(in.flags, TEXTURED)) {
+        var uv = atlas::flip_uv(in.uv, in.flip);
+
         let src_size = vec2<f32>(textureDimensions(sprite_texture, 0));
         let dst_size = in.size;
         let position = in.extra.xy;
@@ -88,12 +92,12 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
             let scale_factor = in.extra.z;
             // In rust side, `in.position` and `in.size` have been applied a `scale_factor`
             let current_src_size = src_size * scale_factor;
-            let uv = atlas::glyph_tile_uv(in.uv, dst_size, current_src_size, position);
+            uv = atlas::glyph_tile_uv(uv, dst_size, current_src_size, position);
             let a = textureSample(sprite_texture, sprite_sampler, uv).a;
             color.a *= a;
         } else {
             let mode = u32(in.extra.z);
-            let uv = atlas::object_fit(in.uv, dst_size, src_size, position, mode);
+            uv = atlas::object_fit(uv, dst_size, src_size, position, mode);
             let d = textureSample(sprite_texture, sprite_sampler, uv);
             color *= d;
         }

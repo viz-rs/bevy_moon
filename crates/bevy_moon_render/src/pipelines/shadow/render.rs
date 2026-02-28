@@ -129,7 +129,6 @@ pub fn prepare_shadows(
     let draw_function =
         *cached_draw_function.get_or_insert_with(|| draw_functions.read().id::<DrawShadows>());
 
-    dbg!(live_entities.capacity());
     let mut batches = EntityHashMap::<UiShadowBatch>::with_capacity(live_entities.capacity());
 
     for (item, instance) in render_phases.filter(draw_function).filter_map(|item| {

@@ -127,8 +127,7 @@ pub fn init_ui_pipeline(mut commands: Commands, asset_server: Res<AssetServer>) 
         &BindGroupLayoutEntries::sequential(
             ShaderStages::FRAGMENT,
             (
-                texture_2d(TextureSampleType::Float { filterable: true })
-                    .visibility(ShaderStages::VERTEX_FRAGMENT),
+                texture_2d(TextureSampleType::Float { filterable: true }),
                 sampler(SamplerBindingType::Filtering),
             ),
         ),
