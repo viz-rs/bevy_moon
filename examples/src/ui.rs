@@ -1,15 +1,60 @@
+use std::f32::consts::{FRAC_PI_2, PI, TAU};
+
 use bevy::{
     camera_controller::pan_camera::{PanCamera, PanCameraPlugin},
-    color::palettes::css::{
-        ANTIQUE_WHITE, BLACK, BLUE, GRAY, GREEN, PINK, RED, WHITE, WHITE_SMOKE,
-    },
+    color::palettes::css::{ANTIQUE_WHITE, BLACK, BLUE, GRAY, GREEN, RED, WHITE},
     prelude::*,
 };
 
 use lucide_icons::Icon;
 
-use bevy_moon::prelude::{BoxShadow, Corners, MoonPlugin, ObjectPosition, div, img, text};
+use bevy_moon::prelude::{Corners, MoonPlugin, ObjectPosition, div, img, text};
 use taffy::{LengthPercentage, Rect};
+
+const LOOP_LENGTH: f32 = 4.0;
+
+#[derive(Resource, Default)]
+struct AnimationState {
+    playing: bool,
+    paused_at: f32,
+    paused_total: f32,
+    t: f32,
+}
+
+trait UpdateTransform {
+    fn update(&self, t: f32, transform: &mut Transform);
+}
+
+/// Moves a component around the origin
+#[derive(Component)]
+struct Move((f32, f32));
+
+impl UpdateTransform for Move {
+    fn update(&self, t: f32, transform: &mut Transform) {
+        transform.translation.x = self.0.0 + ops::sin(t * TAU - FRAC_PI_2) * 50.0;
+        transform.translation.y = self.0.1 + ops::cos(t * TAU - FRAC_PI_2) * 50.0;
+    }
+}
+
+#[derive(Component)]
+struct Scale;
+
+impl UpdateTransform for Scale {
+    fn update(&self, t: f32, transform: &mut Transform) {
+        transform.scale.x = 1.0 + 0.5 * ops::cos(t * TAU).max(0.0);
+        transform.scale.y = 1.0 + 1.5 * ops::cos(t * TAU + PI).max(0.0);
+    }
+}
+
+#[derive(Component)]
+struct Rotate;
+
+impl UpdateTransform for Rotate {
+    fn update(&self, t: f32, transform: &mut Transform) {
+        let q = Quat::from_rotation_z(ops::cos(t * TAU) * 45.0);
+        transform.rotation = q;
+    }
+}
 
 fn setup(
     mut commands: Commands,
@@ -27,44 +72,8 @@ fn setup(
     commands.spawn((
         Mesh2d(meshes.add(Rectangle::from_size(Vec2::new(100.0, 100.0)))),
         MeshMaterial2d(materials.add(ColorMaterial::from(Color::oklcha(0.81, 0.1, 251., 0.99)))),
-        Transform::from_xyz(0.0, -50.0, 0.0),
+        Transform::from_xyz(0.0, 0.0, 0.0),
     ));
-
-    // commands.spawn((
-    //     div().w(200.0).h_auto().flex_col(),
-    //     children![
-    //         div().w_full().h(50.0),
-    //         (
-    //             div().w_full().h(50.0).flex_col(),
-    //             children![
-    //                 div().flex_auto(),
-    //                 div().flex_auto(),
-    //                 (div().flex_auto(), children![div().flex_auto()])
-    //             ]
-    //         ),
-    //         div().w_full().h(100.0),
-    //         (
-    //             div().flex_auto().h(50.0),
-    //             children![
-    //                 div().flex_auto(),
-    //                 div().flex_auto(),
-    //                 (div().flex_auto(), children![div().flex_auto()])
-    //             ]
-    //         ),
-    //         div().w_full().h(50.0),
-    //     ],
-    // ));
-
-    // commands.spawn((
-    //     div().w(100.0).h(100.0),
-    //     children![(
-    //         div().w_p(0.5),
-    //         children![
-    //             div().w_full(),
-    //             (div().w_full(), children![div().flex_auto()])
-    //         ]
-    //     ),],
-    // ));
 
     commands.spawn((
         div()
@@ -176,6 +185,9 @@ fn setup(
             .shadow_md(),
         img(asset_server.load("images/bevy.png")).flip_x().flip_y(),
         Transform::from_xyz(-200.0, -274.0, 0.0),
+        Scale,
+        Move((-200.0, -274.0)),
+        Rotate,
     ));
 
     commands.spawn((
@@ -231,6 +243,9 @@ fn setup(
             .with_font(font.clone())
             .with_font_size(24.0),
         Transform::from_xyz(-100.0, 150.0 - 29.0, 0.0),
+        Scale,
+        Move((-100.0, 150.0 - 29.0)),
+        Rotate,
     ));
 
     commands.spawn((
@@ -247,6 +262,15 @@ fn setup(
     ));
 
     commands.spawn((
+        Text2d::new(Icon::Bird.to_string()),
+        TextColor::BLACK,
+        TextFont::default()
+            .with_font(icon_font.clone())
+            .with_font_size(24.0),
+        Transform::from_xyz(0.0, -50.0, 0.0).with_scale(Vec3::splat(2.0)),
+    ));
+
+    commands.spawn((
         div()
             .w(50.0)
             .h(50.0)
@@ -257,14 +281,52 @@ fn setup(
             .background(WHITE)
             .shadow_lg(),
         children![(
+            div().background(ANTIQUE_WHITE),
             text(Icon::Bird.to_string()),
             TextColor::BLACK,
             TextFont::default()
                 .with_font(icon_font)
                 .with_font_size(24.0),
-            Transform::from_xyz(0.0, 0.0, 0.0),
         )],
+        Transform::from_xyz(0.0, 0.0, 0.0),
+        Scale,
+        Move((0.0, 0.0)),
+        Rotate,
     ));
+}
+
+fn update_animation(
+    mut animation: ResMut<AnimationState>,
+    time: Res<Time>,
+    keys: Res<ButtonInput<KeyCode>>,
+) {
+    let delta = time.elapsed_secs();
+
+    if keys.just_pressed(KeyCode::Space) {
+        animation.playing = !animation.playing;
+
+        if !animation.playing {
+            animation.paused_at = delta;
+        } else {
+            animation.paused_total += delta - animation.paused_at;
+        }
+    }
+
+    if animation.playing {
+        animation.t = (delta - animation.paused_total) % LOOP_LENGTH / LOOP_LENGTH;
+    }
+}
+
+fn update_transform<T: UpdateTransform + Component>(
+    animation: Res<AnimationState>,
+    mut containers: Query<(&mut Transform, &T)>,
+) {
+    if !animation.playing {
+        return;
+    }
+    for (mut transform, update_transform) in &mut containers {
+        update_transform.update(animation.t, &mut transform);
+    }
 }
 
 fn main() {
@@ -274,6 +336,16 @@ fn main() {
         .add_plugins(PanCameraPlugin)
         .add_plugins(MoonPlugin)
         .add_systems(Startup, setup)
+        .add_systems(
+            Update,
+            (
+                update_transform::<Move>,
+                update_transform::<Scale>,
+                update_transform::<Rotate>,
+                update_animation,
+            ),
+        )
+        .init_resource::<AnimationState>()
         // .insert_resource(ClearColor(GRAY.into()));
         .insert_resource(ClearColor(Color::oklch(0.98, 0.0, 0.0)));
 

@@ -1,3 +1,5 @@
+use std::ops::Mul;
+
 use bevy_asset::AssetId;
 use bevy_camera::visibility::InheritedVisibility;
 use bevy_color::{Alpha, ColorToComponents};
@@ -6,7 +8,7 @@ use bevy_ecs::{
     prelude::Res,
     system::{Commands, Query, ResMut},
 };
-use bevy_math::vec2;
+use bevy_math::{Affine3A, vec2};
 use bevy_render::{Extract, sync_world::TemporaryRenderEntity};
 use bevy_transform::components::GlobalTransform;
 
@@ -77,11 +79,13 @@ fn extract_single_div(
     }
 
     let index = div.stack_index as f32 - 0.1;
-    let main_entity = entity.into();
     let affine = transform.affine();
+    let main_entity = entity.into();
     let size = computed_layout.size;
     let spread_ratio = size.y / size.x;
     let corner_radii = div.corner_radii.to_array(); // should be computed_layout.corner_radii
+
+    let [x_axis, y_axis, z_axis, _] = affine.to_cols_array_2d();
 
     for shadow in shadows {
         if shadow.color.is_fully_transparent() {
@@ -92,11 +96,16 @@ fn extract_single_div(
         let spread = vec2(spread_radius, spread_radius * spread_ratio);
         let offset = shadow.offset * FLIP_Y;
 
+        // expands bounds for shadow
         let shadow_size = size - spread * 2.0;
-        let position = affine.translation.to_vec3() + offset.extend(0.0);
 
         let blur_radius = shadow.blur_radius;
         let color = shadow.color.to_linear().to_f32_array();
+
+        let position = affine
+            .mul(Affine3A::from_translation(offset.extend(0.0)))
+            .translation
+            .to_array();
 
         let render_entity = commands.spawn(TemporaryRenderEntity).id();
 
@@ -107,11 +116,15 @@ fn extract_single_div(
             texture: AssetId::default(),
 
             instance: UiShadow {
+                position,
+                x_axis,
+                y_axis,
+                z_axis,
                 color,
                 corner_radii,
                 blur_radius,
                 size: shadow_size.to_array(),
-                position: position.to_array(),
+                ..UiShadow::DEFAULT
             },
         });
     }

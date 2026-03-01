@@ -1,5 +1,5 @@
 #import bevy_render::view::View
-#import bevy_moon::maths::{FRAC_2_SQRT_PI, INVERT_SQRT_2, SQRT_PI_2}
+#import bevy_moon::maths::{FRAC_2_SQRT_PI, INVERT_SQRT_2, SQRT_PI_2, to_mat4x4}
 #import bevy_moon::quad::{
     normalize_vertex_index,
     get_vertex_by_index,
@@ -99,10 +99,14 @@ struct VertexInput {
     @builtin(vertex_index) vertex_id: u32,
 
     @location(0) position: vec3<f32>,
-    @location(1) color: vec4<f32>,
-    @location(2) size: vec2<f32>,
-    @location(3) corner_radii: vec4<f32>,
-    @location(4) blur_radius: f32,
+    @location(1) x_axis: vec3<f32>,
+    @location(2) y_axis: vec3<f32>,
+    @location(3) z_axis: vec3<f32>,
+
+    @location(4) color: vec4<f32>,
+    @location(5) size: vec2<f32>,
+    @location(6) corner_radii: vec4<f32>,
+    @location(7) blur_radius: f32,
 };
 
 struct VertexOutput {
@@ -124,8 +128,10 @@ fn vertex(in: VertexInput) -> VertexOutput {
     let margin = in.blur_radius * 3.0;
     let bounds = in.size + margin * 2.0; // shadow bounds
     let local_position = vertex * bounds;
-    let world_position = in.position.xyz + vec3(local_position, 0.0);
-    let clip_position = view.clip_from_world * vec4(world_position, 1.0);
+    let world_from_local = vec4(local_position, 0.0, 1.0);
+    let matrix = to_mat4x4(in.x_axis, in.y_axis, in.z_axis, in.position);
+    let world_position = matrix * world_from_local;
+    let clip_position = view.clip_from_world * world_position;
 
     return VertexOutput(
         clip_position,
