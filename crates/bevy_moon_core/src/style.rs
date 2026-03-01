@@ -95,9 +95,10 @@ where
 impl Corners<f32> {
     pub const DEFAULT: Self = Self::all(0.0);
 
-    const fn resolve_single(radius: f32, min_length: f32) -> f32 {
-        radius.clamp(0.0, 0.5 * min_length)
-    }
+    // should resolve radius based on its container size
+    // const fn resolve_single(radius: f32, min_length: f32) -> f32 {
+    //     radius.clamp(0.0, 0.5 * min_length)
+    // }
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Reflect)]

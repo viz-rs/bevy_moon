@@ -226,7 +226,7 @@ Data:
 
 ## Anti-Aliasing(AA)
 
-| Note: todo(@fundon)
+> Note: todo(@fundon)
 
 - https://www.shadertoy.com/view/WXGyzR
 - https://finance.biggo.com/news/202508041916_SDF_Anti-Aliasing_Techniques_Debate
