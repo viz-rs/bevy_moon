@@ -8,7 +8,7 @@ members = [
 [workspace.package]
 authors = ["Fangdun Tsai <fundon@pindash.io>"]
 categories = ["game-engines", "graphics", "gui", "rendering"]
-description = "A visual creative space"
+description = "A world space UI for Bevy Engine"
 edition = "2024"
 homepage = "https://moon.viz.rs"
 keywords = ["bevy", "viz", "moon"]
@@ -107,3 +107,13 @@ lto = true           # Link-time optimization
 codegen-units = 1    # Single codegen unit for better optimization
 panic = "abort"      # Smaller binary, no unwinding overhead
 strip = true         # Remove debug symbols
+
+# Optimize for build time in CI.
+[profile.ci]
+inherits = "dev"
+opt-level = 0
+debug = "line-tables-only"
+codegen-units = 4
+
+[profile.ci.package."*"]
+opt-level = 0
