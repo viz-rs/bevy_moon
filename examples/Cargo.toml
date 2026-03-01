@@ -4,13 +4,12 @@ publish = false
 edition.workspace = true
 
 [dependencies]
-bevy = { workspace = true, features = [
+bevy = { workspace = true, default-features = false, features = [
   "pan_camera", 
   "default_app",
   "default_platform",
   "2d_bevy_render",
   "scene",
-  "audio",
   "picking",
 ] }
 

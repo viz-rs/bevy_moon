@@ -332,7 +332,17 @@ fn update_transform<T: UpdateTransform + Component>(
 fn main() {
     let mut app = App::new();
 
-    app.add_plugins(DefaultPlugins)
+    #[allow(unused_mut)]
+    let mut default_plugins = DefaultPlugins.build();
+
+    #[cfg(any(target_os = "android", target_os = "ios"))]
+    {
+        default_plugins = default_plugins
+            .disable::<bevy::winit::WinitPlugin>()
+            .set(WindowPlugin::default());
+    }
+
+    app.add_plugins(default_plugins)
         .add_plugins(PanCameraPlugin)
         .add_plugins(MoonPlugin)
         .add_systems(Startup, setup)
@@ -348,6 +358,14 @@ fn main() {
         .init_resource::<AnimationState>()
         // .insert_resource(ClearColor(GRAY.into()));
         .insert_resource(ClearColor(Color::oklch(0.98, 0.0, 0.0)));
+
+    #[cfg(not(any(target_family = "wasm", target_os = "android", target_os = "ios")))]
+    app.insert_resource(bevy::winit::WinitSettings {
+        focused_mode: bevy::winit::UpdateMode::Continuous,
+        unfocused_mode: bevy::winit::UpdateMode::reactive_low_power(
+            std::time::Duration::from_secs(60),
+        ),
+    });
 
     app.run();
 }
