@@ -98,7 +98,7 @@ impl Default for TextFlags {
     }
 }
 
-/// Text measurement for UI layout. See [`NodeMeasure`].
+/// Text measurement for UI layout.
 ///
 #[derive(Clone, Copy)]
 pub struct TextMeasure {

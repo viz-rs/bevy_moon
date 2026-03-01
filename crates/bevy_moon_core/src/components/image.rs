@@ -11,11 +11,6 @@ use super::div::Div;
 #[derive(Component, Clone, Debug, Reflect)]
 #[require(Div)]
 #[reflect(Component, Clone, Debug, Default)]
-#[cfg_attr(
-    feature = "serialize",
-    derive(serde::Serialize, serde::Deserialize),
-    reflect(Serialize, Deserialize)
-)]
 pub struct Image {
     pub color: Color,
     pub handle: Handle<bevy_image::Image>,

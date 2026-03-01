@@ -11,11 +11,6 @@ use crate::style::{BoxShadow, Corners};
 #[derive(Component, Clone, Debug, Reflect)]
 #[require(Transform, ComputedLayout)]
 #[reflect(Component, Clone, Debug, Default)]
-#[cfg_attr(
-    feature = "serialize",
-    derive(serde::Serialize, serde::Deserialize),
-    reflect(Serialize, Deserialize)
-)]
 pub struct Div {
     pub stack_index: usize,
 

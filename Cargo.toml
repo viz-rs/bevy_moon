@@ -66,7 +66,7 @@ indexmap = "2"
 accesskit = "0.21"
 bytemuck = { version = "1.5", features = ["derive"] }
 derive_more = { version = "2", default-features = false, features = ["from"] }
-serde = { version = "1", features = ["derive"] }
+serde = { version = "1", features = ["derive"], default-features = false }
 thiserror = { version = "2", default-features = false }
 tracing = { version = "0.1", default-features = false, features = ["std"] }
 uuid = { version = "1.1", features = ["v4"] }

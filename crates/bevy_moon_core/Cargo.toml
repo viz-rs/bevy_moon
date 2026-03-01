@@ -62,6 +62,7 @@ bevy_core_pipeline = { workspace = true }
 default = ["picking"]
 serialize = [
   "serde",
+  "taffy/serde",
   "smallvec/serde",
   "bevy_math/serialize",
   "bevy_platform/serialize",
