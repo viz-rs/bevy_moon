@@ -23,6 +23,7 @@ use crate::{
         computed::{ComputedLayout, ComputedTargetInfo},
         content_size::ContentSize,
     },
+    geometry::FLIP_Y,
     layout::UiLayoutTree,
     prelude::Div,
     stack::{UiStack, UiStackMap},
@@ -263,7 +264,8 @@ pub fn ui_layout_system(
         layouts.clear();
     }
 
-    ui_layout_tree.print_tree();
+    // #[cfg(debug_assertions)]
+    // ui_layout_tree.print_tree();
 }
 
 fn update_ui_layout_recursive(
@@ -379,7 +381,7 @@ fn update_ui_geometry_recursive(
     if let Some((_parent_transform, parent_size)) = maybe_inherited {
         // @TODO(fundon): scrolling
         let local_center = computed_layout.location + 0.5 * (computed_layout.size - parent_size);
-        let local_center_flipped = local_center * Vec2::new(1.0, -1.0);
+        let local_center_flipped = local_center * FLIP_Y;
 
         let mut local_affine = computed_layout.affine;
         if local_center_flipped != local_affine.translation.truncate() {

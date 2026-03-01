@@ -55,6 +55,12 @@ impl SpecializedRenderPipeline for UiShadowsPipeline {
             vec![
                 // position
                 VertexFormat::Float32x3,
+                // x_axis
+                VertexFormat::Float32x3,
+                // y_axis
+                VertexFormat::Float32x3,
+                // z_axis
+                VertexFormat::Float32x3,
                 // color
                 VertexFormat::Float32x4,
                 // size

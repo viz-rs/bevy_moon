@@ -1,10 +1,8 @@
 use bevy_app::Plugin;
-use bevy_render::{
-    RenderApp, extract_resource::ExtractResourcePlugin, sync_world::SyncToRenderWorld,
-};
+use bevy_render::{RenderApp, extract_resource::ExtractResourcePlugin};
 use bevy_shader::load_shader_library;
 
-use bevy_moon_core::prelude::{Div, UiStackMap};
+use bevy_moon_core::prelude::UiStackMap;
 
 use crate::{
     pipelines::{
@@ -24,8 +22,6 @@ impl Plugin for MoonRenderPlugin {
         load_shader_library!(app, "shaders/libs/rectangles.wgsl");
         load_shader_library!(app, "shaders/libs/atlas.wgsl");
         load_shader_library!(app, "shaders/libs/utils.wgsl");
-
-        // app.register_required_components::<Div, SyncToRenderWorld>();
 
         app.add_plugins(ExtractResourcePlugin::<UiStackMap>::default());
 

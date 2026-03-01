@@ -29,3 +29,13 @@ const FRAC_2_SQRT_PI: f32 = 2.0 / SQRT_PI;
 
 // 0.6366197723675814
 const INVERT_HALF_PI: f32 = 1.0 / HALF_PI;
+
+/// Creates a 4x4 matrix from the given axes and position.
+fn to_mat4x4(x_axis: vec3<f32>, y_axis: vec3<f32>, z_axis: vec3<f32>, position: vec3<f32>) -> mat4x4<f32> {
+    return mat4x4(
+        vec4(x_axis, 0.0),
+        vec4(y_axis, 0.0),
+        vec4(z_axis, 0.0),
+        vec4(position, 1.0)
+    );
+}

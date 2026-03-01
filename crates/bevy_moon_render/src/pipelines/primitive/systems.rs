@@ -1,3 +1,5 @@
+use std::ops::Mul;
+
 use bevy_asset::AssetId;
 use bevy_camera::visibility::InheritedVisibility;
 use bevy_color::{Alpha, Color, ColorToComponents};
@@ -91,8 +93,9 @@ fn extract_single_div(
 
     let index = div.stack_index as f32;
     let main_entity = entity.into();
-    let affine = transform.affine();
-    let position = affine.translation.to_array();
+
+    let [x_axis, y_axis, z_axis, position] = transform.affine().to_cols_array_2d();
+
     let size = computed_layout.size.to_array();
     let corner_radii = div.corner_radii.to_array(); // should be computed_layout.corner_radii
     let border_widths = computed_layout.border_widths.to_array();
@@ -107,6 +110,9 @@ fn extract_single_div(
 
         instance: UiInstance {
             position,
+            x_axis,
+            y_axis,
+            z_axis,
             color,
             size,
             flags: 0,
@@ -174,8 +180,6 @@ fn extract_single_image(
 
     let index = div.stack_index as f32 + 0.01;
     let main_entity = entity.into();
-    let affine = transform.affine();
-    let position = affine.translation.to_array();
     let size = computed_layout.size.to_array();
     let color = image.color.to_linear().to_f32_array();
     let corner_radii = div.corner_radii.to_array(); // should be computed_layout.corner_radii
@@ -188,6 +192,8 @@ fn extract_single_image(
 
     let render_entity = commands.spawn(TemporaryRenderEntity).id();
 
+    let [x_axis, y_axis, z_axis, position] = transform.affine().to_cols_array_2d();
+
     extracted_ui_instances.instances.push(ExtractedUiInstance {
         index,
         camera_entity,
@@ -196,6 +202,9 @@ fn extract_single_image(
 
         instance: UiInstance {
             position,
+            x_axis,
+            y_axis,
+            z_axis,
             color,
             size,
             flags: 1,
@@ -204,6 +213,7 @@ fn extract_single_image(
             border_widths,
             extra,
             flip,
+            ..UiInstance::DEFAULT
         },
     });
 }
@@ -275,12 +285,15 @@ fn extract_single_text(
         return;
     }
 
+    let offset = computed_layout.size.mul(FLIP_X * 0.5).extend(0.0);
+
     let scale_factor = text_layout_info.scale_factor;
     let scale_factor_recip = scale_factor.recip();
-    let offset = computed_layout.size * FLIP_X * 0.5;
-    let affine = transform.affine()
-        * Affine3A::from_translation(offset.extend(0.0))
-        * Affine3A::from_scale(Vec3::splat(scale_factor_recip));
+    let scale_factor_affine = Affine3A::from_scale(Vec3::splat(scale_factor));
+    let affine = transform
+        .affine()
+        .mul(Affine3A::from_translation(offset))
+        .mul(scale_factor_affine.inverse());
 
     let index = div.stack_index as f32 + 0.06;
     let main_entity = entity.into();
@@ -312,11 +325,14 @@ fn extract_single_text(
 
         let color = color.to_f32_array();
         let top_left = rect.min * scale_factor_recip;
-        let size = (rect.size() * scale_factor_recip).to_array();
+        let size = rect.size().mul(scale_factor_recip).to_array();
         let extra = [top_left.x, top_left.y, scale_factor_recip]; // glyph tile's top-left position
-        let position = affine
-            .transform_point3((position * FLIP_Y).extend(0.0))
-            .to_array();
+        let position_flipped = position.mul(FLIP_Y).extend(0.0);
+
+        let [x_axis, y_axis, z_axis, position] = affine
+            .mul(Affine3A::from_translation(position_flipped))
+            .mul(scale_factor_affine)
+            .to_cols_array_2d();
 
         let render_entity = commands.spawn(TemporaryRenderEntity).id();
 
@@ -328,6 +344,9 @@ fn extract_single_text(
 
             instance: UiInstance {
                 position,
+                x_axis,
+                y_axis,
+                z_axis,
                 color,
                 size,
                 flags: 3,
