@@ -333,19 +333,43 @@ fn setup(
             .items_center()
             .justify_center()
             .background(WHITE)
+            .p_px()
             .shadow_sm(),
         children![(
-            text("Tip: "),
+            text("Tips: \n"),
             TextFont::default(),
             TextColor::BLACK,
             children![
-                (TextSpan::new("Enter "), TextColor::BLACK),
                 (
                     TextSpan::new(Icon::Space.to_string()),
+                    TextFont::default().with_font(icon_font.clone()),
+                    TextColor(DEEP_SKY_BLUE.into())
+                ),
+                (
+                    TextSpan::new(" enable/disable animations"),
+                    TextColor::BLACK
+                ),
+                (TextSpan::new("\n")),
+                (
+                    TextSpan::new(Icon::Mouse.to_string()),
+                    TextFont::default().with_font(icon_font.clone()),
+                    TextColor(DEEP_SKY_BLUE.into())
+                ),
+                (TextSpan::new(" zoom in/out camera"), TextColor::BLACK),
+                (TextSpan::new("\n")),
+                (
+                    TextSpan::new(Icon::Move.to_string()),
+                    TextFont::default().with_font(icon_font.clone()),
+                    TextColor(DEEP_SKY_BLUE.into())
+                ),
+                (TextSpan::new(" A W S D move camera"), TextColor::BLACK),
+                (TextSpan::new("\n")),
+                (
+                    TextSpan::new(Icon::RefreshCcwDot.to_string()),
                     TextFont::default().with_font(icon_font),
                     TextColor(DEEP_SKY_BLUE.into())
                 ),
-                (TextSpan::new(" to enable animation"), TextColor::BLACK),
+                (TextSpan::new(" Q E rotate camera"), TextColor::BLACK),
             ],
         )],
         Transform::from_xyz(300.0, 300.0, 0.0),
