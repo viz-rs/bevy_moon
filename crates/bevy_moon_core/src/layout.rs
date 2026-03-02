@@ -61,7 +61,7 @@ impl UiLayoutTree {
     ) -> NodeId {
         let taffy = &mut self.taffy;
 
-        let node_id = match self.node_map.entry(entity) {
+        match self.node_map.entry(entity) {
             Entry::Occupied(entry) => {
                 let node_id = *entry.get();
                 self.set_node_style(node_id, style);
@@ -78,9 +78,7 @@ impl UiLayoutTree {
                 entry.insert(node_id);
                 node_id
             }
-        };
-
-        node_id
+        }
     }
 
     pub fn set_node_style(&mut self, id: NodeId, style: Style) {
@@ -147,10 +145,10 @@ impl UiLayoutTree {
         text_block_query: &'a mut Query<&mut ComputedTextBlock>,
         font_system: &'a mut FontCx,
     ) {
-        let node_id = *self.node_map.entry(root_node_entity).or_insert_with(|| {
-            let node_id = self.taffy.new_leaf(Style::DEFAULT).expect(EXPECT_MESSAGE);
-            node_id
-        });
+        let node_id = *self
+            .node_map
+            .entry(root_node_entity)
+            .or_insert_with(|| self.taffy.new_leaf(Style::DEFAULT).expect(EXPECT_MESSAGE));
 
         let physical_size = physical_size.as_vec2();
 

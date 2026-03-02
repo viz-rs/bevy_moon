@@ -28,14 +28,8 @@ impl UiStack {
     }
 }
 
-#[derive(Resource, Clone, Debug)]
+#[derive(Resource, Clone, Default, Debug)]
 pub struct UiStackMap(Arc<EntityHashMap<UiStack>>);
-
-impl Default for UiStackMap {
-    fn default() -> Self {
-        Self(Default::default())
-    }
-}
 
 impl AsMut<EntityHashMap<UiStack>> for UiStackMap {
     fn as_mut(&mut self) -> &mut EntityHashMap<UiStack> {

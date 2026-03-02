@@ -10,7 +10,7 @@ mod render;
 pub mod plugin;
 pub mod systems;
 
-pub(self) type UiInstanceMeta = UiMeta<UiInstance>;
-pub(self) type UiInstanceBatch = UiBatch<UiInstance>;
-pub(self) type UiInstanceViewBindGroup = UiViewBindGroup<UiPipeline>;
-pub(self) type ExtractedUiInstances = super::ExtractedUiInstances<UiInstance>;
+pub(crate) type UiInstanceMeta = UiMeta<UiInstance>;
+pub(crate) type UiInstanceBatch = UiBatch<UiInstance>;
+pub(crate) type UiInstanceViewBindGroup = UiViewBindGroup<UiPipeline>;
+pub(crate) type ExtractedUiInstances = super::ExtractedUiInstances<UiInstance>;

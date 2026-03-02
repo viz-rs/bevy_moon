@@ -1,5 +1,8 @@
 use bevy_math::Vec2;
 
+pub const FLIP_X: Vec2 = Vec2::new(-1.0, 1.0);
+pub const FLIP_Y: Vec2 = Vec2::new(1.0, -1.0);
+
 /// Converts a taffy unit to a bevy unit.
 pub trait Convert<T> {
     #[must_use]
@@ -31,6 +34,3 @@ pub mod taffy {
         }
     }
 }
-
-pub const FLIP_X: Vec2 = Vec2::new(-1.0, 1.0);
-pub const FLIP_Y: Vec2 = Vec2::new(1.0, -1.0);
