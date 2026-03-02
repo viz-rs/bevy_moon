@@ -1,10 +1,15 @@
 #import bevy_render::view::View
-#import bevy_moon::maths::{FRAC_2_SQRT_PI, INVERT_SQRT_2, SQRT_PI_2, to_mat4x4}
+#import bevy_moon::maths::{
+    FRAC_2_SQRT_PI,
+    INVERT_SQRT_2,
+    SQRT_PI_2,
+    from_3x4_to_mat4x4,
+}
 #import bevy_moon::quad::{
     normalize_vertex_index,
     get_vertex_by_index,
     get_corner_index,
-    get_inset_by_index
+    get_inset_by_index,
 }
 #import bevy_moon::rectangles::{sd_rounded_box}
 
@@ -129,7 +134,7 @@ fn vertex(in: VertexInput) -> VertexOutput {
     let bounds = in.size + margin * 2.0; // shadow bounds
     let local_position = vertex * bounds;
     let world_from_local = vec4(local_position, 0.0, 1.0);
-    let matrix = to_mat4x4(in.x_axis, in.y_axis, in.z_axis, in.position);
+    let matrix = from_3x4_to_mat4x4(in.x_axis, in.y_axis, in.z_axis, in.position);
     let world_position = matrix * world_from_local;
     let clip_position = view.clip_from_world * world_position;
 

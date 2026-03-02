@@ -1,6 +1,6 @@
 #import bevy_render::view::View
 
-#import bevy_moon::maths::{to_mat4x4}
+#import bevy_moon::maths::{from_3x4_to_mat4x4}
 #import bevy_moon::flags::{TEXTURED, GLYPH, enabled}
 #import bevy_moon::quad::{
     normalize_vertex_index,
@@ -64,7 +64,7 @@ fn vertex(in: VertexInput) -> VertexOutput {
     let uv = to_uv(vertex_index);
     let local_position = vertex * in.size;
     let world_from_local = vec4(local_position, 0.0, 1.0);
-    let matrix = to_mat4x4(in.x_axis, in.y_axis, in.z_axis, in.position);
+    let matrix = from_3x4_to_mat4x4(in.x_axis, in.y_axis, in.z_axis, in.position);
     let world_position = matrix * world_from_local;
     let clip_position = view.clip_from_world * world_position;
 
