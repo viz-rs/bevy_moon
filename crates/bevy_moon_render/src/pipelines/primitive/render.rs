@@ -192,11 +192,10 @@ pub fn prepare_divs(
 
         let key = (item.main_entity(), texture);
 
-        // when a new texture is assigned
-        // clear the live entities and keep its capacity
-        // also handle multiple spans in same text container
+        // Clears the live entities when a new texture is assigned and keeps its capacity.
+        // This is also used to handle multiple spans with multiple fonts in same text container.
         //
-        // an example for textures order: [A, A, B, A, C, B, B, B, C]
+        // An example for textures order: [A, A, B, A, C, B, B, B, C]
         //                                 ↓     ↓     ↓  ↓        ↓
         if !live_entities.is_empty() && !live_entities.contains_key(&key) {
             live_entities.clear();
