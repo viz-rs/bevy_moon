@@ -100,22 +100,18 @@ pub trait RenderPhasesFilter<I>
 where
     I: SortedPhaseItem,
 {
-    /// Filters the render phases based on the given draw function.
-    fn filter(&mut self, draw_function: DrawFunctionId) -> impl Iterator<Item = &mut I>;
+    /// Filters the render phases based on the given draw function id.
+    fn filter(&mut self, draw_function_id: DrawFunctionId) -> impl Iterator<Item = &mut I>;
 }
 
 impl<I> RenderPhasesFilter<I> for ViewSortedRenderPhases<I>
 where
     I: SortedPhaseItem,
 {
-    fn filter(&mut self, draw_function: DrawFunctionId) -> impl Iterator<Item = &mut I> {
+    fn filter(&mut self, draw_function_id: DrawFunctionId) -> impl Iterator<Item = &mut I> {
+        let filter = move |item: &&mut I| item.draw_function() == draw_function_id;
+
         self.values_mut()
-            .flat_map(move |phase| {
-                phase
-                    .items
-                    .values_mut()
-                    .filter(move |item| item.draw_function() == draw_function)
-            })
-            .into_iter()
+            .flat_map(move |phase| phase.items.values_mut().filter(filter))
     }
 }
