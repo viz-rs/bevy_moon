@@ -17,10 +17,9 @@ use bevy_moon_core::{
     prelude::{ComputedLayout, Div, UiStackMap},
 };
 
-use crate::pipelines::{
-    ExtractedUiInstance,
-    shadow::{ExtractedUiShadows, extract::UiShadow},
-};
+use crate::pipelines::ExtractedUiInstance;
+
+use super::{ExtractedUiShadows, UiShadow};
 
 pub fn extract_shadows(
     mut commands: Commands,
@@ -69,11 +68,12 @@ fn extract_single_div(
     if !inherited_visibility.get() {
         return;
     }
-
+    if computed_layout.is_empty() {
+        return;
+    }
     let Some(shadows) = &div.box_shadow else {
         return;
     };
-
     if shadows.is_empty() {
         return;
     }
@@ -84,8 +84,6 @@ fn extract_single_div(
     let size = computed_layout.size;
     let spread_ratio = size.y / size.x;
     let corner_radii = div.corner_radii.to_array(); // should be computed_layout.corner_radii
-
-    let [x_axis, y_axis, z_axis, _] = affine.to_cols_array_2d();
 
     for shadow in shadows {
         if shadow.color.is_fully_transparent() {
@@ -102,10 +100,9 @@ fn extract_single_div(
         let blur_radius = shadow.blur_radius;
         let color = shadow.color.to_linear().to_f32_array();
 
-        let position = affine
+        let [x_axis, y_axis, z_axis, position] = affine
             .mul(Affine3A::from_translation(offset.extend(0.0)))
-            .translation
-            .to_array();
+            .to_cols_array_2d();
 
         let render_entity = commands.spawn(TemporaryRenderEntity).id();
 

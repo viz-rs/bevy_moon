@@ -80,6 +80,9 @@ fn extract_single_div(
     if !inherited_visibility.get() {
         return;
     }
+    if computed_layout.is_empty() {
+        return;
+    }
 
     let color = div.background.unwrap_or(Color::NONE);
     let border_color = div.border_color.unwrap_or(Color::NONE);
@@ -168,6 +171,9 @@ fn extract_single_image(
     camera_entity: Entity,
 ) {
     if !inherited_visibility.get() {
+        return;
+    }
+    if computed_layout.is_empty() {
         return;
     }
     if image.handle == TRANSPARENT_IMAGE_HANDLE {
@@ -280,6 +286,9 @@ fn extract_single_text(
     camera_entity: Entity,
 ) {
     if !inherited_visibility.get() {
+        return;
+    }
+    if computed_layout.is_empty() {
         return;
     }
 

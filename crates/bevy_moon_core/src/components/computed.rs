@@ -34,6 +34,10 @@ impl Default for ComputedLayout {
 }
 
 impl ComputedLayout {
+    pub fn is_empty(&self) -> bool {
+        self.size.cmpeq(Vec2::ZERO).any()
+    }
+
     pub fn update(&mut self, layout: Layout) {
         use crate::geometry::Convert;
 
