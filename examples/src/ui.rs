@@ -2,7 +2,7 @@ use std::f32::consts::{FRAC_PI_2, PI, TAU};
 
 use bevy::{
     camera_controller::pan_camera::{PanCamera, PanCameraPlugin},
-    color::palettes::css::{ANTIQUE_WHITE, BLACK, BLUE, GRAY, GREEN, RED, WHITE},
+    color::palettes::css::{ANTIQUE_WHITE, BLACK, BLUE, DEEP_SKY_BLUE, GRAY, GREEN, RED, WHITE},
     prelude::*,
 };
 
@@ -53,6 +53,40 @@ impl UpdateTransform for Rotate {
     fn update(&self, t: f32, transform: &mut Transform) {
         let q = Quat::from_rotation_z(ops::cos(t * TAU) * 45.0);
         transform.rotation = q;
+    }
+}
+
+fn update_animation(
+    mut animation: ResMut<AnimationState>,
+    time: Res<Time>,
+    keys: Res<ButtonInput<KeyCode>>,
+) {
+    let delta = time.elapsed_secs();
+
+    if keys.just_pressed(KeyCode::Space) {
+        animation.playing = !animation.playing;
+
+        if !animation.playing {
+            animation.paused_at = delta;
+        } else {
+            animation.paused_total += delta - animation.paused_at;
+        }
+    }
+
+    if animation.playing {
+        animation.t = (delta - animation.paused_total) % LOOP_LENGTH / LOOP_LENGTH;
+    }
+}
+
+fn update_transform<T: UpdateTransform + Component>(
+    animation: Res<AnimationState>,
+    mut containers: Query<(&mut Transform, &T)>,
+) {
+    if !animation.playing {
+        return;
+    }
+    for (mut transform, update_transform) in &mut containers {
+        update_transform.update(animation.t, &mut transform);
     }
 }
 
@@ -281,11 +315,10 @@ fn setup(
             .background(WHITE)
             .shadow_lg(),
         children![(
-            div().background(ANTIQUE_WHITE),
             text(Icon::Bird.to_string()),
             TextColor::BLACK,
             TextFont::default()
-                .with_font(icon_font)
+                .with_font(icon_font.clone())
                 .with_font_size(24.0),
         )],
         Transform::from_xyz(0.0, 0.0, 0.0),
@@ -293,40 +326,31 @@ fn setup(
         Move((0.0, 0.0)),
         Rotate,
     ));
-}
 
-fn update_animation(
-    mut animation: ResMut<AnimationState>,
-    time: Res<Time>,
-    keys: Res<ButtonInput<KeyCode>>,
-) {
-    let delta = time.elapsed_secs();
-
-    if keys.just_pressed(KeyCode::Space) {
-        animation.playing = !animation.playing;
-
-        if !animation.playing {
-            animation.paused_at = delta;
-        } else {
-            animation.paused_total += delta - animation.paused_at;
-        }
-    }
-
-    if animation.playing {
-        animation.t = (delta - animation.paused_total) % LOOP_LENGTH / LOOP_LENGTH;
-    }
-}
-
-fn update_transform<T: UpdateTransform + Component>(
-    animation: Res<AnimationState>,
-    mut containers: Query<(&mut Transform, &T)>,
-) {
-    if !animation.playing {
-        return;
-    }
-    for (mut transform, update_transform) in &mut containers {
-        update_transform.update(animation.t, &mut transform);
-    }
+    commands.spawn((
+        div()
+            .flex_auto()
+            .items_center()
+            .justify_center()
+            .background(WHITE)
+            .shadow_sm(),
+        children![(
+            text("Tip: "),
+            TextFont::default(),
+            TextColor::BLACK,
+            children![
+                (TextSpan::new("Enter "), TextColor::BLACK),
+                (
+                    TextSpan::new(Icon::Space.to_string()),
+                    TextFont::default().with_font(icon_font),
+                    TextColor(DEEP_SKY_BLUE.into())
+                ),
+                (TextSpan::new(" to enable animation"), TextColor::BLACK),
+            ],
+        )],
+        Transform::from_xyz(300.0, 300.0, 0.0),
+        Scale,
+    ));
 }
 
 fn main() {

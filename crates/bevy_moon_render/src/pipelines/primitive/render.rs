@@ -13,11 +13,12 @@ use bevy_render::{
     },
     render_resource::{BindGroupEntries, PipelineCache, SpecializedRenderPipelines},
     renderer::{RenderDevice, RenderQueue},
-    sync_world::{MainEntity, MainEntityHashMap},
+    sync_world::MainEntity,
     texture::GpuImage,
     view::{ExtractedView, ViewUniforms},
 };
 use bevy_sprite_render::SpriteAssetEvents;
+use indexmap::IndexMap;
 
 use crate::{
     pipelines::UiTextureBindGroups,
@@ -130,7 +131,7 @@ pub fn prepare_divs(
     mut texture_bind_groups: ResMut<UiTextureBindGroups>,
     mut render_phases: ResMut<ViewSortedRenderPhases<TransparentUi>>,
     // maps `main entity` to `render entity`
-    mut live_entities: Local<MainEntityHashMap<Entity>>,
+    mut live_entities: Local<IndexMap<(MainEntity, AssetId<bevy_image::Image>), Entity>>,
     mut cached_draw_function: Local<Option<DrawFunctionId>>,
 ) {
     // If an image has changed, the GpuImage has (probably) changed
@@ -176,10 +177,6 @@ pub fn prepare_divs(
             continue;
         };
 
-        let render_entity = *live_entities
-            .entry(item.main_entity())
-            .or_insert_with(|| item.entity());
-
         let index = ui_meta.instance_buffer.push(instance) as u32;
 
         texture_bind_groups
@@ -193,7 +190,10 @@ pub fn prepare_divs(
                 )
             });
 
-        // Todo(@fundon): should check if in a larger text case, it might be multiple textures in same entity
+        let render_entity = *live_entities
+            .entry((item.main_entity(), texture))
+            .or_insert_with(|| item.entity());
+
         batches
             .entry(render_entity)
             .and_modify(|batch| {
@@ -205,6 +205,9 @@ pub fn prepare_divs(
                 batch.texture = texture;
             })
             .or_insert_with(|| {
+                // clears it when a new texture is assigned
+                // and handles multiple spans in same text
+                live_entities.clear();
                 // only the first phase needs to be updated
                 // phases under the same entity will be batch processed
                 item.batch_range_mut().end += 1;

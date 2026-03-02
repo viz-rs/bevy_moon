@@ -283,11 +283,11 @@ fn extract_single_text(
         return;
     }
 
-    let offset = computed_layout.size.mul(FLIP_X * 0.5).extend(0.0);
-
     let scale_factor = text_layout_info.scale_factor;
     let scale_factor_recip = scale_factor.recip();
     let scale_factor_affine = Affine3A::from_scale(Vec3::splat(scale_factor));
+
+    let offset = computed_layout.size.mul(FLIP_X * 0.5).extend(0.0);
     let affine = transform
         .affine()
         .mul(Affine3A::from_translation(offset))
@@ -323,8 +323,8 @@ fn extract_single_text(
 
         let color = color.to_f32_array();
         let top_left = rect.min * scale_factor_recip;
+        let extra = top_left.extend(scale_factor_recip).to_array(); // glyph tile's top-left position
         let size = rect.size().mul(scale_factor_recip).to_array();
-        let extra = [top_left.x, top_left.y, scale_factor_recip]; // glyph tile's top-left position
         let position_flipped = position.mul(FLIP_Y).extend(0.0);
 
         let [x_axis, y_axis, z_axis, position] = affine
