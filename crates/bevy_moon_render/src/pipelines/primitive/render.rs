@@ -130,7 +130,7 @@ pub fn prepare_divs(
     mut extracted_ui_instances: ResMut<ExtractedUiInstances>,
     mut texture_bind_groups: ResMut<UiTextureBindGroups>,
     mut render_phases: ResMut<ViewSortedRenderPhases<TransparentUi>>,
-    // maps `main entity` to `render entity`
+    // maps `main entity - texture` to `render entity`
     mut live_entities: Local<IndexMap<(MainEntity, AssetId<bevy_image::Image>), Entity>>,
     mut cached_draw_function: Local<Option<DrawFunctionId>>,
 ) {
@@ -190,12 +190,20 @@ pub fn prepare_divs(
                 )
             });
 
-        let render_entity = *live_entities
-            .entry((item.main_entity(), texture))
-            .or_insert_with(|| item.entity());
+        let key = (item.main_entity(), texture);
+
+        // when a new texture is assigned, clear the live entities and keep its capacity
+        // also handles multiple spans in same text
+        // textures order example: [A, A, B, A, C, B, B, B, C]
+        //                          ↓     ↓     ↓  ↓        ↓
+        if !live_entities.is_empty() && !live_entities.contains_key(&key) {
+            live_entities.clear();
+        }
+
+        let render_entity = live_entities.entry(key).or_insert_with(|| item.entity());
 
         batches
-            .entry(render_entity)
+            .entry(*render_entity)
             .and_modify(|batch| {
                 batch.range.end = index + 1;
                 // updates it with real texture
@@ -205,9 +213,6 @@ pub fn prepare_divs(
                 batch.texture = texture;
             })
             .or_insert_with(|| {
-                // clears it when a new texture is assigned
-                // and handles multiple spans in same text
-                live_entities.clear();
                 // only the first phase needs to be updated
                 // phases under the same entity will be batch processed
                 item.batch_range_mut().end += 1;

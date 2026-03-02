@@ -12,7 +12,7 @@ The world space UI for Bevy Engine.
 
 ## License
 
-Flowkit is free, open source and permissively licensed!
+Bevy Moon is free, open source and permissively licensed!
 Except where noted (below and/or in individual files), all code in this repository is dual-licensed under either:
 
 - MIT License ([LICENSE-MIT](LICENSE-MIT) or [http://opensource.org/licenses/MIT](http://opensource.org/licenses/MIT))
