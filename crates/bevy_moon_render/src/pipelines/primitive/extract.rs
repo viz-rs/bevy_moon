@@ -43,4 +43,14 @@ impl UiInstance {
         extra: [0.0; 3],
         flip: [0; 2],
     };
+
+    pub const IMAGE: Self = Self {
+        flags: 1,
+        ..Self::DEFAULT
+    };
+
+    pub const TEXT: Self = Self {
+        flags: 3,
+        ..Self::DEFAULT
+    };
 }

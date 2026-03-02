@@ -115,7 +115,6 @@ fn extract_single_div(
             z_axis,
             color,
             size,
-            flags: 0,
             corner_radii,
             border_color,
             border_widths,
@@ -207,13 +206,12 @@ fn extract_single_image(
             z_axis,
             color,
             size,
-            flags: 1,
             corner_radii,
             border_color,
             border_widths,
             extra,
             flip,
-            ..UiInstance::DEFAULT
+            ..UiInstance::IMAGE
         },
     });
 }
@@ -349,10 +347,9 @@ fn extract_single_text(
                 z_axis,
                 color,
                 size,
-                flags: 3,
                 corner_radii,
                 extra,
-                ..UiInstance::DEFAULT
+                ..UiInstance::TEXT
             },
         });
     }
