@@ -53,13 +53,13 @@ impl SpecializedRenderPipeline for UiShadowsPipeline {
         let vertex_layout = VertexBufferLayout::from_vertex_formats(
             VertexStepMode::Instance,
             vec![
-                // position
-                VertexFormat::Float32x3,
                 // x_axis
                 VertexFormat::Float32x3,
                 // y_axis
                 VertexFormat::Float32x3,
                 // z_axis
+                VertexFormat::Float32x3,
+                // translation
                 VertexFormat::Float32x3,
                 // color
                 VertexFormat::Float32x4,
