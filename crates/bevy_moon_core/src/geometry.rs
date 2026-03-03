@@ -3,7 +3,7 @@ use bevy_math::Vec2;
 pub const FLIP_X: Vec2 = Vec2::new(-1.0, 1.0);
 pub const FLIP_Y: Vec2 = Vec2::new(1.0, -1.0);
 
-/// Converts a taffy unit to a bevy unit.
+/// Converts a Taffy unit to a Bevy unit.
 pub trait Convert<T> {
     #[must_use]
     fn convert(self) -> T;
@@ -17,18 +17,21 @@ pub mod taffy {
     use super::Convert;
 
     impl Convert<Vec2> for Point<f32> {
+        #[inline]
         fn convert(self) -> Vec2 {
             Vec2::new(self.x, self.y)
         }
     }
 
     impl Convert<Vec2> for Size<f32> {
+        #[inline]
         fn convert(self) -> Vec2 {
             Vec2::new(self.width, self.height)
         }
     }
 
     impl Convert<Vec4> for Rect<f32> {
+        #[inline]
         fn convert(self) -> Vec4 {
             Vec4::new(self.top, self.right, self.bottom, self.left)
         }

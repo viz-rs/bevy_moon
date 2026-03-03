@@ -15,13 +15,11 @@ pub struct MeasureArgs<'a> {
     pub text_buffer: Option<&'a mut ComputedTextBlock>,
 }
 
-/// A `Measure` is used to compute the size of a ui node
-/// when the size of that node is based on its content.
 pub trait Measure: Send + Sync + DynClone + 'static {
-    /// Calculate the size of the node given the constraints.
+    /// Calculates the size of the node given the constraints.
     fn measure(&mut self, args: MeasureArgs<'_>, style: &Style) -> Vec2;
 
-    /// Calculate the text buffer for the text node.
+    /// Gets the text buffer for the text node.
     fn get_text_buffer<'a>(
         &mut self,
         _: &'a mut Query<&mut ComputedTextBlock>,
@@ -54,8 +52,7 @@ impl NodeContext {
     }
 }
 
-/// A `FixedMeasure` is a `Measure` that ignores all constraints and
-/// always returns the same size.
+/// Always returns `fixed size` for the node.
 #[derive(Clone)]
 pub struct FixedMeasure {
     pub size: Vec2,

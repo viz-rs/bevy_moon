@@ -35,35 +35,27 @@ where
     }
 
     #[inline]
-    pub const fn top_left(self, value: T) -> Self {
-        Self {
-            top_left: value,
-            ..self
-        }
+    pub const fn top_left(mut self, value: T) -> Self {
+        self.top_left = value;
+        self
     }
 
     #[inline]
-    pub const fn top_right(self, value: T) -> Self {
-        Self {
-            top_right: value,
-            ..self
-        }
+    pub const fn top_right(mut self, value: T) -> Self {
+        self.top_right = value;
+        self
     }
 
     #[inline]
-    pub const fn bottom_right(self, value: T) -> Self {
-        Self {
-            bottom_right: value,
-            ..self
-        }
+    pub const fn bottom_right(mut self, value: T) -> Self {
+        self.bottom_right = value;
+        self
     }
 
     #[inline]
-    pub const fn bottom_left(self, value: T) -> Self {
-        Self {
-            bottom_left: value,
-            ..self
-        }
+    pub const fn bottom_left(mut self, value: T) -> Self {
+        self.bottom_left = value;
+        self
     }
 
     #[inline]
@@ -111,7 +103,8 @@ pub struct BoxShadow {
 }
 
 /// Sets the box shadow of the element.
-/// [Docs](https://tailwindcss.com/docs/box-shadow)
+///
+/// <https://tailwindcss.com/docs/box-shadow>
 impl BoxShadow {
     pub const XS2: [Self; 1] = [Self {
         color: Color::srgba(0.0, 0.0, 0.0, 0.05),
@@ -210,16 +203,16 @@ impl BoxShadow {
 /// <https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/object-fit>
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
 pub enum ObjectFit {
-    /// Stretch to fill the container (ignores aspect ratio)
+    /// Stretch to fill the container (ignores aspect ratio).
     Fill,
-    /// Fit entirely within the container (maintains aspect ratio, may letterbox)
+    /// Fit entirely within the container (maintains aspect ratio, may letterbox).
     Contain,
-    /// Fill the container completely, cropping if necessary (maintains aspect ratio)
+    /// Fill the container completely, cropping if necessary (maintains aspect ratio).
     #[default]
     Cover,
-    /// Scale down only if larger than container (maintains aspect ratio)
+    /// Scale down only if larger than container (maintains aspect ratio).
     ScaleDown,
-    /// No scaling, maintain its original size
+    /// No scaling, maintain its original size.
     None,
 }
 

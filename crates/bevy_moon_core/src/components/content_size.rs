@@ -4,18 +4,18 @@ use bevy_reflect::{Reflect, prelude::ReflectDefault};
 
 use crate::measure::{Measure, NodeContext};
 
-/// A node with a `ContentSize` component is a node where its size
-/// is based on its content.
+/// Defines or measure size for the contents of the node.
 #[derive(Component, Reflect, Default, Deref, DerefMut)]
 #[reflect(Component, Default)]
 pub struct ContentSize {
-    /// The `Measure` used to compute the intrinsic size
+    /// The `Measure` used to compute the intrinsic size.
     #[reflect(ignore, clone)]
     pub(crate) measure: Option<NodeContext>,
 }
 
 impl ContentSize {
-    /// Sets a `Measure` for the UI node entity with this component
+    /// Sets a `Measure` for the current node.
+    #[inline]
     pub fn set<M>(&mut self, measure: M)
     where
         M: Measure + Send + Sync + Clone + 'static,

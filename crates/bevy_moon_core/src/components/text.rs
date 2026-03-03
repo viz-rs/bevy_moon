@@ -38,13 +38,11 @@ use super::div::Div;
     LineHeight,
     TextFlags,
     ContentSize,
-    // Hinting is enabled by default as UI text is normally pixel.
     FontHinting::Enabled
 )]
 pub struct Text(pub String);
 
 impl Text {
-    /// Makes a new text component.
     pub fn new(text: impl Into<String>) -> Self {
         Self(text.into())
     }
@@ -77,15 +75,10 @@ pub fn text(value: impl Into<String>) -> Text {
     Text::new(value)
 }
 
-/// UI text system flags.
-///
-/// Used internally by [`measure_text_system`] and [`text_system`] to schedule text for processing.
 #[derive(Component, Debug, Clone, Reflect)]
 #[reflect(Component, Default, Debug, Clone)]
 pub struct TextFlags {
-    /// If set then a new measure function for the text node will be created.
     pub(crate) needs_measure_fn: bool,
-    /// If set then the text will be recomputed.
     pub(crate) needs_recompute: bool,
 }
 
@@ -98,22 +91,15 @@ impl Default for TextFlags {
     }
 }
 
-/// Text measurement for UI layout.
-///
 #[derive(Clone, Copy)]
 pub struct TextMeasure {
-    /// Minimum size for a text area in pixels, to be used when laying out widgets with taffy.
     pub min: Vec2,
-    /// Maximum size for a text area in pixels, to be used when laying out widgets with taffy.
     pub max: Vec2,
-    /// The entity that is measured.
     pub entity: Entity,
-
     pub scale_factor: f32,
 }
 
 impl TextMeasure {
-    /// Checks if the cosmic text buffer is needed for measuring the text.
     #[inline]
     pub const fn needs_buffer(height: Option<f32>, available_width: taffy::AvailableSpace) -> bool {
         height.is_none() && matches!(available_width, taffy::AvailableSpace::Definite(_))
@@ -141,7 +127,7 @@ impl Measure for TextMeasure {
         let scale_up_fn = |v| v * scale_factor;
         let scale_down_fn = |v| v * scale_factor.recip();
 
-        // should scale up layout's arguments
+        // scales up them from taffy layout engine
         let width = width.map(scale_up_fn);
         let height = height.map(scale_up_fn);
 
@@ -184,7 +170,7 @@ impl Measure for TextMeasure {
             },
         };
 
-        // should scale down the size before returning
+        // scales down and returns to taffy layout engine
         scale_down_fn(size).ceil()
     }
 

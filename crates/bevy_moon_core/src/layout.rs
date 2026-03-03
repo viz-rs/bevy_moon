@@ -50,7 +50,7 @@ fn _assert_send_sync_layout_tree_impl_safe() {
     _assert_send_sync::<UiLayoutTree>();
 }
 
-const EXPECT_MESSAGE: &str = "we should avoid taffy layout errors by construction if possible";
+const EXPECT_MESSAGE: &str = "we should avoid taffy layout errors";
 
 impl UiLayoutTree {
     pub fn upsert_node(

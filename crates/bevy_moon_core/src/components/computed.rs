@@ -16,8 +16,7 @@ pub struct ComputedLayout {
     /// The border widths of the node.
     pub border_widths: Vec4,
 
-    /// This is the affine of the node relative to its parent.
-    /// Stores it for inversion.
+    /// The affine of the node is relatived to its parent and used for inversion.
     pub affine: Affine3A,
 }
 
@@ -34,10 +33,14 @@ impl Default for ComputedLayout {
 }
 
 impl ComputedLayout {
+    /// Returns `true` if the size of this node is empty.
+    #[inline]
     pub fn is_empty(&self) -> bool {
         self.size.cmpeq(Vec2::ZERO).any()
     }
 
+    /// Updates the latest layout result from [`Layout`].
+    #[inline]
     pub fn update(&mut self, layout: Layout) {
         use crate::geometry::Convert;
 

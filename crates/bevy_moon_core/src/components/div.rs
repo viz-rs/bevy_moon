@@ -42,8 +42,6 @@ impl Div {
         box_shadow: None,
     };
 
-    // Display
-
     pub fn flex(mut self) -> Self {
         self.style.display = Display::Flex;
         self
@@ -74,64 +72,50 @@ impl Div {
         self
     }
 
-    // Flex
-
-    /// Sets flex direction to row (horizontal)
     pub fn flex_row(mut self) -> Self {
         self.style.display = Display::Flex;
         self.style.flex_direction = FlexDirection::Row;
         self
     }
 
-    /// Sets flex direction to column (vertical)
     pub fn flex_col(mut self) -> Self {
         self.style.display = Display::Flex;
         self.style.flex_direction = FlexDirection::Column;
         self
     }
 
-    /// Sets flex direction to row-reverse
     pub fn flex_row_reverse(mut self) -> Self {
         self.style.display = Display::Flex;
         self.style.flex_direction = FlexDirection::RowReverse;
         self
     }
 
-    /// Sets flex direction to column-reverse
     pub fn flex_col_reverse(mut self) -> Self {
         self.style.display = Display::Flex;
         self.style.flex_direction = FlexDirection::ColumnReverse;
         self
     }
 
-    /// Sets flex-grow to 1 (element will grow to fill space)
     pub fn flex_grow(mut self) -> Self {
         self.style.flex_grow = 1.0;
         self
     }
 
-    /// Sets flex-grow to a specific value
-    ///
-    /// Uses this for proportional sizing. For example, an element with flex_grow_value(2.0)
-    /// will grow to twice the size of an element with flex_grow_value(1.0).
     pub fn flex_grow_value(mut self, value: f32) -> Self {
         self.style.flex_grow = value;
         self
     }
 
-    /// Sets flex-shrink to 1 (element will shrink if needed)
     pub fn flex_shrink(mut self) -> Self {
         self.style.flex_shrink = 1.0;
         self
     }
 
-    /// Sets flex-shrink to 0 (element won't shrink)
     pub fn flex_shrink_0(mut self) -> Self {
         self.style.flex_shrink = 0.0;
         self
     }
 
-    /// Sets flex-basis to auto
     pub fn flex_auto(mut self) -> Self {
         self.style.flex_grow = 1.0;
         self.style.flex_shrink = 1.0;
@@ -139,7 +123,6 @@ impl Div {
         self
     }
 
-    /// Sets flex: 1 1 0% (grow, shrink, basis 0)
     pub fn flex_1(mut self) -> Self {
         self.style.flex_grow = 1.0;
         self.style.flex_shrink = 1.0;
@@ -147,7 +130,6 @@ impl Div {
         self
     }
 
-    /// Allows wrapping
     pub fn flex_wrap(mut self) -> Self {
         self.style.flex_wrap = FlexWrap::Wrap;
         self
@@ -163,59 +145,46 @@ impl Div {
         self
     }
 
-    // Sizing
-
-    /// Sets width with a given absolute length.
     pub fn w(mut self, val: f32) -> Self {
         self.style.size.width = Dimension::length(val);
         self
     }
 
-    /// Sets width with given a percentage length.
     pub fn w_p(mut self, val: f32) -> Self {
         self.style.size.width = Dimension::percent(val);
         self
     }
 
-    /// Sets width to 100%.
     pub fn w_full(mut self) -> Self {
         self.style.size.width = Dimension::percent(1.0);
         self
     }
 
-    /// Sets width to auto.
     pub fn w_auto(mut self) -> Self {
         self.style.size.width = Dimension::auto();
         self
     }
 
-    /// Sets height with a given absolute length.
     pub fn h(mut self, val: f32) -> Self {
         self.style.size.height = Dimension::length(val);
         self
     }
 
-    /// Sets height with given a percentage length.
     pub fn h_p(mut self, val: f32) -> Self {
         self.style.size.height = Dimension::percent(val);
         self
     }
 
-    /// Set height to 100%
     pub fn h_full(mut self) -> Self {
         self.style.size.height = Dimension::percent(1.0);
         self
     }
 
-    /// Set height to auto
     pub fn h_auto(mut self) -> Self {
         self.style.size.height = Dimension::auto();
         self
     }
 
-    // Colors
-
-    // Sets background color
     pub fn background(mut self, color: impl Into<Color>) -> Self {
         self.background = Some(color.into());
         self
@@ -227,20 +196,16 @@ impl Div {
         self
     }
 
-    // Sets border color
     pub fn border_color(mut self, color: impl Into<Color>) -> Self {
         self.border_color = Some(color.into());
         self
     }
 
-    // Sets border widths
     #[inline]
     pub const fn border(mut self, border: Rect<LengthPercentage>) -> Self {
         self.style.border = border;
         self
     }
-
-    // Box Shadows
 
     pub fn shadow(mut self, shadows: Vec<BoxShadow>) -> Self {
         self.box_shadow = Some(SmallVec::from_vec(shadows));
@@ -287,7 +252,6 @@ impl Div {
         self
     }
 
-    // Padding
     pub fn p_px(mut self) -> Self {
         self.style.padding = Rect::length(1.0);
         self
