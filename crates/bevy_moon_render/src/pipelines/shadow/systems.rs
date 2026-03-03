@@ -92,7 +92,7 @@ fn extract_single_div(
 
         let spread_radius = shadow.spread_radius;
         let spread = vec2(spread_radius, spread_radius * spread_ratio);
-        let offset = shadow.offset * FLIP_Y;
+        let offset = shadow.offset.mul(FLIP_Y).extend(0.0);
 
         // expands bounds for shadow
         let shadow_size = size - spread * 2.0;
@@ -100,8 +100,8 @@ fn extract_single_div(
         let blur_radius = shadow.blur_radius;
         let color = shadow.color.to_linear().to_f32_array();
 
-        let [x_axis, y_axis, z_axis, position] = affine
-            .mul(Affine3A::from_translation(offset.extend(0.0)))
+        let matrix = affine
+            .mul(Affine3A::from_translation(offset))
             .to_cols_array_2d();
 
         let render_entity = commands.spawn(TemporaryRenderEntity).id();
@@ -113,10 +113,7 @@ fn extract_single_div(
             texture: AssetId::default(),
 
             instance: UiShadow {
-                position,
-                x_axis,
-                y_axis,
-                z_axis,
+                matrix,
                 color,
                 corner_radii,
                 blur_radius,

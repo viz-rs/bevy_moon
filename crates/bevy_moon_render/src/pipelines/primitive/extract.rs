@@ -3,11 +3,10 @@ use bytemuck::{Pod, Zeroable};
 #[repr(C)]
 #[derive(Clone, Copy, Pod, Zeroable)]
 pub struct UiInstance {
-    // TODO(@fundon): sets them to [f32; 4] if need to align
-    pub position: [f32; 3],
-    pub x_axis: [f32; 3],
-    pub y_axis: [f32; 3],
-    pub z_axis: [f32; 3],
+    /// A `[[f32; 3]; 4]` 3D array storing data in column major order (3Cx4R).
+    ///
+    /// Sees [`bevy_math::Affine3A::to_cols_array_2d`].
+    pub matrix: [[f32; 3]; 4],
 
     pub color: [f32; 4],
     pub size: [f32; 2],
@@ -16,8 +15,10 @@ pub struct UiInstance {
     pub border_color: [f32; 4],
     pub border_widths: [f32; 4],
 
-    // glyph: [left, top, scale]
-    // image: [ObjectPosition.x, ObjectPosition.y, ObjectFit]
+    /// | Type  | Data                                              |
+    /// | ----- | ------------------------------------------------- |
+    /// | Glyph | `[left, top, scale]`                              |
+    /// | Image | `[ObjectPosition.x, ObjectPosition.y, ObjectFit]` |
     pub extra: [f32; 3],
     pub flip: [u32; 2],
 }
@@ -29,11 +30,9 @@ impl Default for UiInstance {
 }
 
 impl UiInstance {
+    /// The normal instance. Its by default.
     pub const DEFAULT: Self = Self {
-        position: [0.0; 3],
-        x_axis: [0.0; 3],
-        y_axis: [0.0; 3],
-        z_axis: [0.0; 3],
+        matrix: [[0.0; 3]; 4],
         color: [0.0; 4],
         size: [0.0; 2],
         flags: 0,
@@ -44,11 +43,13 @@ impl UiInstance {
         flip: [0; 2],
     };
 
+    /// The `image` instance.
     pub const IMAGE: Self = Self {
         flags: 1,
         ..Self::DEFAULT
     };
 
+    /// The `text` instance.
     pub const TEXT: Self = Self {
         flags: 3,
         ..Self::DEFAULT

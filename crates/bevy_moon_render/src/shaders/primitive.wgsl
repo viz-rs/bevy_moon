@@ -22,10 +22,10 @@
 struct VertexInput {
     @builtin(vertex_index) vertex_id: u32,
 
-    @location(0) position: vec3<f32>,
-    @location(1) x_axis: vec3<f32>,
-    @location(2) y_axis: vec3<f32>,
-    @location(3) z_axis: vec3<f32>,
+    @location(0) x_axis: vec3<f32>,
+    @location(1) y_axis: vec3<f32>,
+    @location(2) z_axis: vec3<f32>,
+    @location(3) translation: vec3<f32>,
 
     @location(4) color: vec4<f32>,
     @location(5) size: vec2<f32>,
@@ -64,7 +64,7 @@ fn vertex(in: VertexInput) -> VertexOutput {
     let uv = to_uv(vertex_index);
     let local_position = vertex * in.size;
     let world_from_local = vec4(local_position, 0.0, 1.0);
-    let matrix = from_3x4_to_mat4x4(in.x_axis, in.y_axis, in.z_axis, in.position);
+    let matrix = from_3x4_to_mat4x4(in.x_axis, in.y_axis, in.z_axis, in.translation);
     let world_position = matrix * world_from_local;
     let clip_position = view.clip_from_world * world_position;
 
@@ -107,6 +107,11 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
             uv = atlas::object_fit(uv, dst_size, src_size, position, mode);
             let d = textureSample(sprite_texture, sprite_sampler, uv);
             color *= d;
+        }
+        
+        // fast path
+        if (color.a <= 0.0) {
+            discard;
         }
     }
 

@@ -23,6 +23,7 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetShadowViewBindGroup<I
     type ViewQuery = (Read<ViewUniformOffset>, Read<UiShadowViewBindGroup>);
     type ItemQuery = ();
 
+    #[inline]
     fn render<'w>(
         _item: &P,
         (view_uniform, ui_view_bind_group): ROQueryItem<'w, '_, Self::ViewQuery>,

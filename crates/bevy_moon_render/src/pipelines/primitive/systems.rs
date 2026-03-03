@@ -97,11 +97,11 @@ fn extract_single_div(
     let index = div.stack_index as f32;
     let main_entity = entity.into();
 
-    let [x_axis, y_axis, z_axis, position] = transform.affine().to_cols_array_2d();
-
     let size = computed_layout.size.to_array();
     let corner_radii = div.corner_radii.to_array(); // should be computed_layout.corner_radii
     let border_widths = computed_layout.border_widths.to_array();
+
+    let matrix = transform.affine().to_cols_array_2d();
 
     let render_entity = commands.spawn(TemporaryRenderEntity).id();
 
@@ -112,10 +112,7 @@ fn extract_single_div(
         texture: AssetId::default(),
 
         instance: UiInstance {
-            position,
-            x_axis,
-            y_axis,
-            z_axis,
+            matrix,
             color,
             size,
             corner_radii,
@@ -195,9 +192,9 @@ fn extract_single_image(
         .to_array();
     let flip = image.flip.map(Into::into);
 
-    let render_entity = commands.spawn(TemporaryRenderEntity).id();
+    let matrix = transform.affine().to_cols_array_2d();
 
-    let [x_axis, y_axis, z_axis, position] = transform.affine().to_cols_array_2d();
+    let render_entity = commands.spawn(TemporaryRenderEntity).id();
 
     extracted_ui_instances.instances.push(ExtractedUiInstance {
         index,
@@ -206,10 +203,7 @@ fn extract_single_image(
         texture: image.handle.id(),
 
         instance: UiInstance {
-            position,
-            x_axis,
-            y_axis,
-            z_axis,
+            matrix,
             color,
             size,
             corner_radii,
@@ -336,7 +330,7 @@ fn extract_single_text(
         let size = rect.size().mul(scale_factor_recip).to_array();
         let position_flipped = position.mul(FLIP_Y).extend(0.0);
 
-        let [x_axis, y_axis, z_axis, position] = affine
+        let matrix = affine
             .mul(Affine3A::from_translation(position_flipped))
             .mul(scale_factor_affine)
             .to_cols_array_2d();
@@ -350,10 +344,7 @@ fn extract_single_text(
             texture,
 
             instance: UiInstance {
-                position,
-                x_axis,
-                y_axis,
-                z_axis,
+                matrix,
                 color,
                 size,
                 corner_radii,

@@ -108,6 +108,7 @@ impl<I> RenderPhasesFilter<I> for ViewSortedRenderPhases<I>
 where
     I: SortedPhaseItem,
 {
+    #[inline]
     fn filter(&mut self, draw_function_id: DrawFunctionId) -> impl Iterator<Item = &mut I> {
         let filter = move |item: &&mut I| item.draw_function() == draw_function_id;
 
