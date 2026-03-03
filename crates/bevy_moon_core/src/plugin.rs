@@ -49,27 +49,20 @@ impl Plugin for MoonCorePlugin {
                     .in_set(UiSystems::Layout)
                     .before(TransformSystems::Propagate)
                     // Text and Text2D operate on disjoint sets of entities
-                    .ambiguous_with(bevy_sprite::update_text2d_layout)
-                    .ambiguous_with(bevy_text::detect_text_needs_rerender::<bevy_sprite::Text2d>),
+                    .ambiguous_with(bevy_sprite::update_text2d_layout),
             ),
         );
 
-        // text interop
+        // text component
         {
             app.add_systems(
                 PostUpdate,
                 (
-                    (
-                        bevy_text::detect_text_needs_rerender::<text::Text>,
-                        text::measure_text_system,
-                    )
+                    text::measure_text_system
                         .chain()
                         .after(bevy_text::load_font_assets_into_font_collection)
+                        // .after(bevy_text::detect_text_needs_rerender::<text::Text>)
                         .in_set(UiSystems::Content)
-                        // Text and Text2d are independent.
-                        .ambiguous_with(
-                            bevy_text::detect_text_needs_rerender::<bevy_sprite::Text2d>,
-                        )
                         // Potential conflict: `Assets<Image>`
                         // Since both systems will only ever insert new [`Image`] assets,
                         // they will never observe each other's effects.
@@ -78,10 +71,6 @@ impl Plugin for MoonCorePlugin {
                         .in_set(UiSystems::PostLayout)
                         .after(bevy_text::load_font_assets_into_font_collection)
                         .after(bevy_asset::AssetEventSystems)
-                        // Text2d and bevy_moon ui text are entirely on separate entities
-                        .ambiguous_with(
-                            bevy_text::detect_text_needs_rerender::<bevy_sprite::Text2d>,
-                        )
                         .ambiguous_with(bevy_sprite::update_text2d_layout)
                         .ambiguous_with(bevy_sprite::calculate_bounds_text2d),
                 ),

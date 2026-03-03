@@ -91,6 +91,7 @@ impl Default for TextFlags {
     }
 }
 
+/// Syncs [`TextMeasureInfo`] for measuring with text buffer.
 #[derive(Clone, Copy)]
 pub struct TextMeasure {
     pub min: Vec2,
@@ -196,6 +197,7 @@ pub fn measure_text_system(
     mut text_query: Query<
         (
             Entity,
+            Ref<Text>,
             Ref<TextLayout>,
             Ref<ComputedLayout>,
             &mut ContentSize,
@@ -211,6 +213,7 @@ pub fn measure_text_system(
 ) {
     for (
         entity,
+        text,
         text_layout,
         computed_layout,
         mut content_size,
@@ -235,7 +238,8 @@ pub fn measure_text_system(
 
         let is_changed = computed_text_block
             .needs_rerender(computed_layout.is_changed(), rem_size.is_changed())
-            || content_size.is_added()
+            || text.is_changed()
+            || content_size.is_changed()
             || text_flags.needs_measure_fn;
 
         if !is_changed {
