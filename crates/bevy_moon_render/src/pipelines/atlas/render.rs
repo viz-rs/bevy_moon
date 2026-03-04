@@ -1,4 +1,4 @@
-use bevy_asset::{AssetEvent, AssetId};
+use bevy_asset::AssetId;
 use bevy_ecs::{
     entity::{Entity, EntityHashMap},
     query::With,
@@ -17,7 +17,6 @@ use bevy_render::{
     texture::GpuImage,
     view::{ExtractedView, ViewUniforms},
 };
-use bevy_sprite_render::SpriteAssetEvents;
 use indexmap::IndexMap;
 
 use crate::{
@@ -119,7 +118,6 @@ pub fn prepare_atlases(
     pipeline_cache: Res<PipelineCache>,
     ui_atlas_pipeline: Res<UiAtlasPipeline>,
     gpu_images: Res<RenderAssets<GpuImage>>,
-    events: Res<SpriteAssetEvents>,
     draw_functions: Res<DrawFunctions<TransparentUi>>,
     mut commands: Commands,
     mut ui_atlas_meta: ResMut<UiAtlasMeta>,
@@ -130,19 +128,6 @@ pub fn prepare_atlases(
     mut live_entities: Local<IndexMap<(MainEntity, AssetId<bevy_image::Image>), Entity>>,
     mut cached_draw_function: Local<Option<DrawFunctionId>>,
 ) {
-    // If an image has changed, the GpuImage has (probably) changed
-    for event in &events.images {
-        match event {
-          AssetEvent::Added { .. } |
-          AssetEvent::Unused { .. } |
-          // Images don't have dependencies
-          AssetEvent::LoadedWithDependencies { .. } => {}
-          AssetEvent::Modified { id } | AssetEvent::Removed { id } => {
-              texture_bind_groups.values.remove(id);
-          }
-      };
-    }
-
     ui_atlas_meta.instance_buffer.clear();
 
     let draw_function =
@@ -154,8 +139,6 @@ pub fn prepare_atlases(
         extracted_ui_atlases
             .instances
             .get(item.extracted_index)
-            // SAFETY: if remove the filter
-            // .filter(|extracted_ui_instance| extracted_ui_instance.entity.0 == item.entity())
             .map(|extracted_ui_instance| {
                 (
                     item,

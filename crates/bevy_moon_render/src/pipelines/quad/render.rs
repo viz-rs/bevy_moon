@@ -27,7 +27,7 @@ use super::{
     pipeline::{UiQuadPipeline, UiQuadPipelineKey},
 };
 
-pub fn queue_divs(
+pub fn queue_quads(
     render_targets: Query<(MainEntity, &MoonUiCameraView, &MoonUiOptions)>,
     render_views: Query<&ExtractedView, With<MoonUiViewTarget>>,
     extracted_ui_quads: Res<ExtractedUiQuads>,
@@ -112,13 +112,13 @@ pub fn prepare_view_bind_groups(
     }
 }
 
-pub fn prepare_divs(
+pub fn prepare_quads(
     render_device: Res<RenderDevice>,
     render_queue: Res<RenderQueue>,
     draw_functions: Res<DrawFunctions<TransparentUi>>,
     mut commands: Commands,
     mut ui_quad_meta: ResMut<UiQuadMeta>,
-    mut extracted_ui_instances: ResMut<ExtractedUiQuads>,
+    mut extracted_ui_quads: ResMut<ExtractedUiQuads>,
     mut render_phases: ResMut<ViewSortedRenderPhases<TransparentUi>>,
     // maps `main entity` to `render entity`
     mut live_entities: Local<IndexMap<MainEntity, Entity>>,
@@ -132,7 +132,7 @@ pub fn prepare_divs(
     let mut batches = EntityHashMap::<UiQuadBatch>::with_capacity(live_entities.capacity());
 
     for (item, instance) in render_phases.filter(draw_function).filter_map(|item| {
-        extracted_ui_instances
+        extracted_ui_quads
             .instances
             .get(item.extracted_index)
             .map(|extracted_ui_instance| (item, extracted_ui_instance.instance))
@@ -162,6 +162,6 @@ pub fn prepare_divs(
 
     commands.try_insert_batch(batches);
 
-    extracted_ui_instances.instances.clear();
+    extracted_ui_quads.instances.clear();
     live_entities.clear();
 }

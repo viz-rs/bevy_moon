@@ -22,7 +22,7 @@ impl Default for UiQuad {
 }
 
 impl UiQuad {
-    /// The default value of the instance.
+    /// The default value of the quad instance.
     pub const DEFAULT: Self = Self {
         matrix: [[0.0; 3]; 4],
         color: [0.0; 4],

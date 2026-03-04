@@ -10,8 +10,8 @@ use bevy_moon_core::prelude::UiStackMap;
 
 use crate::{
     pipelines::{ExtractUiSystems, UiTextureBindGroups},
+    systems::{extract_camera_views, extract_sprite_events},
     transparent::TransparentUi,
-    view::extract_camera_views,
 };
 
 use super::{
@@ -47,7 +47,10 @@ impl Plugin for MoonInternalRenderPlugin {
         render_app.add_systems(
             ExtractSchedule,
             // @TODO(fundon): set a correct subview index
-            extract_camera_views::<{ u32::MAX }>.in_set(ExtractUiSystems::CameraViews),
+            (
+                extract_camera_views::<{ u32::MAX }>.in_set(ExtractUiSystems::CameraViews),
+                extract_sprite_events,
+            ),
         );
 
         render_app.add_systems(

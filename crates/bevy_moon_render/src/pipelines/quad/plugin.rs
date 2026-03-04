@@ -13,7 +13,7 @@ use super::{
     ExtractedUiQuads, UiQuadMeta,
     draw::DrawUiQuad,
     pipeline::{UiQuadPipeline, init_ui_quad_pipeline},
-    render::{prepare_divs, prepare_view_bind_groups, queue_divs},
+    render::{prepare_quads, prepare_view_bind_groups, queue_quads},
     systems::extract_divs,
 };
 
@@ -37,11 +37,11 @@ impl Plugin for MoonQuadRenderPlugin {
             .add_systems(
                 Render,
                 (
-                    queue_divs
+                    queue_quads
                         .in_set(RenderSystems::Queue)
                         .before(sort_phase_system::<TransparentUi>),
                     prepare_view_bind_groups.in_set(RenderSystems::PrepareBindGroups),
-                    prepare_divs.in_set(RenderSystems::PrepareBindGroups),
+                    prepare_quads.in_set(RenderSystems::PrepareBindGroups),
                 ),
             );
     }

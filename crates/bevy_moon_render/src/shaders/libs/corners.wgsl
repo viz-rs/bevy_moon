@@ -1,5 +1,5 @@
 // The MIT License
-// Copyright © 2024 Inigo Quilez
+// Copyright © Inigo Quilez
 // 
 // <https://iquilezles.org/articles/roundedboxes/>
 

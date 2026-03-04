@@ -15,8 +15,8 @@
 
 @group(0) @binding(0) var<uniform> view: View;
 
-@group(1) @binding(0) var sprite_texture: texture_2d<f32>;
-@group(1) @binding(1) var sprite_sampler: sampler;
+@group(1) @binding(0) var atlas_texture: texture_2d<f32>;
+@group(1) @binding(1) var atlas_sampler: sampler;
 
 struct VertexInput {
     @builtin(vertex_index) vertex_id: u32,
@@ -78,25 +78,26 @@ fn vertex(in: VertexInput) -> VertexOutput {
 
 @fragment
 fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
-    var color = in.color;
-
-    var uv = atlas::flip_uv(in.uv, in.flipped);
-
-    let src_size = vec2<f32>(textureDimensions(sprite_texture, 0));
+    let src_size = vec2<f32>(textureDimensions(atlas_texture, 0));
     let dst_size = in.size;
     let position = in.extra.xy;
+    
+    var color = in.color;
+    var uv = atlas::flip_uv(in.uv, in.flipped);
 
     if (in.flags == GLYPH) {
         let scale_factor = in.extra.z;
-        // In rust side, `in.position` and `in.size` have been applied a `scale_factor`
         let current_src_size = src_size * scale_factor;
         uv = atlas::glyph_tile_uv(uv, dst_size, current_src_size, position);
-        let a = textureSample(sprite_texture, sprite_sampler, uv).a;
-        color.a *= a;
+        // let a = textureSample(atlas_texture, atlas_sampler, uv).a;
+        // color.a *= a;
+        let d = textureSample(atlas_texture, atlas_sampler, uv);
+        color *= d;
+        return color;
     } else {
         let mode = u32(in.extra.z);
         uv = atlas::object_fit(uv, dst_size, src_size, position, mode);
-        let d = textureSample(sprite_texture, sprite_sampler, uv);
+        let d = textureSample(atlas_texture, atlas_sampler, uv);
         color *= d;
     }
     

@@ -4,6 +4,7 @@
 mod pipelines;
 mod plugin;
 mod render_pass;
+mod systems;
 mod transparent;
 mod view;
 

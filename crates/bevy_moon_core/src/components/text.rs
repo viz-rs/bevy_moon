@@ -120,7 +120,7 @@ impl Measure for TextMeasure {
             text_buffer,
         } = args;
 
-        // it has been scaled in text layout engine
+        // In text layout engine, the `min` and `max` are already scaled.
         let min = self.min;
         let max = self.max;
         let scale_factor = self.scale_factor;
@@ -128,7 +128,7 @@ impl Measure for TextMeasure {
         let scale_up_fn = |v| v * scale_factor;
         let scale_down_fn = |v| v * scale_factor.recip();
 
-        // scales up when there are from taffy layout engine
+        // When coming from taffy layout, they are not scaled, so need to scale up them.
         let width = width.map(scale_up_fn);
         let height = height.map(scale_up_fn);
 
@@ -171,7 +171,7 @@ impl Measure for TextMeasure {
             },
         };
 
-        // scales down when it be returned to taffy layout engine
+        // When returning to taffy layout engine, need to scale down them.
         scale_down_fn(size).ceil()
     }
 

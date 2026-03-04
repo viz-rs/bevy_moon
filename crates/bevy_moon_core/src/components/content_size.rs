@@ -8,7 +8,7 @@ use crate::measure::{Measure, NodeContext};
 #[derive(Component, Reflect, Default, Deref, DerefMut)]
 #[reflect(Component, Default)]
 pub struct ContentSize {
-    /// The `Measure` used to compute the intrinsic size.
+    /// The `Measure` is used to compute the intrinsic size.
     #[reflect(ignore, clone)]
     pub(crate) measure: Option<NodeContext>,
 }

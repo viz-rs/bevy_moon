@@ -48,7 +48,7 @@ pub fn ui_target_info_system(
             continue;
         };
 
-        let scale_factor = camera.target_scaling_factor().unwrap_or(1.0);
+        let scale_factor = camera.target_scaling_factor().unwrap_or(2.0);
         let physical_size = camera
             .physical_viewport_size()
             .unwrap_or(UVec2::ZERO)
