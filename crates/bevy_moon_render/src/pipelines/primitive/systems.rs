@@ -190,7 +190,7 @@ fn extract_single_image(
     let extra = (*image.object_position)
         .extend(image.object_fit as isize as f32)
         .to_array();
-    let flip = image.flip.map(Into::into);
+    let flipped = image.flipped.map(Into::into);
 
     let matrix = transform.affine().to_cols_array_2d();
 
@@ -210,7 +210,7 @@ fn extract_single_image(
             border_color,
             border_widths,
             extra,
-            flip,
+            flipped,
             ..UiInstance::IMAGE
         },
     });

@@ -79,7 +79,7 @@ impl SpecializedRenderPipeline for UiPipeline {
                 // glyph: [left, top, scale]
                 // image: [ObjectPosition.x, ObjectPosition.y, ObjectFit]
                 VertexFormat::Float32x3,
-                // flip
+                // flipped
                 VertexFormat::Uint32x2,
             ],
         );

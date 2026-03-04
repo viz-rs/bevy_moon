@@ -20,7 +20,7 @@ pub struct UiInstance {
     /// | Glyph | `[left, top, scale]`                              |
     /// | Image | `[ObjectPosition.x, ObjectPosition.y, ObjectFit]` |
     pub extra: [f32; 3],
-    pub flip: [u32; 2],
+    pub flipped: [u32; 2],
 }
 
 impl Default for UiInstance {
@@ -40,7 +40,7 @@ impl UiInstance {
         border_color: [0.0; 4],
         border_widths: [0.0; 4],
         extra: [0.0; 3],
-        flip: [0; 2],
+        flipped: [0; 2],
     };
 
     /// The `image` instance.
