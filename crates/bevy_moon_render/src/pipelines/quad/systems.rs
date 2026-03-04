@@ -15,7 +15,7 @@ use crate::pipelines::ExtractedUiInstance;
 
 use super::{ExtractedUiQuads, UiQuad};
 
-pub fn extract_divs(
+pub fn extract_quads(
     mut commands: Commands,
     mut extracted_ui_quads: ResMut<ExtractedUiQuads>,
     ui_stack_map: Extract<Res<UiStackMap>>,
@@ -37,12 +37,12 @@ pub fn extract_divs(
             .iter()
             .flat_map(|range| div_query.iter_many(&ui_stack.entities[range.clone()]))
         {
-            extract_single_div(&mut commands, &mut extracted_ui_quads, div, camera_entity);
+            extract_quad(&mut commands, &mut extracted_ui_quads, div, camera_entity);
         }
     }
 }
 
-fn extract_single_div(
+fn extract_quad(
     commands: &mut Commands,
     extracted_ui_quads: &mut ExtractedUiQuads,
     (entity, transform, inherited_visibility, computed_layout, div): (

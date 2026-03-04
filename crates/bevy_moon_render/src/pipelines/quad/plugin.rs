@@ -14,7 +14,7 @@ use super::{
     draw::DrawUiQuad,
     pipeline::{UiQuadPipeline, init_ui_quad_pipeline},
     render::{prepare_quads, prepare_view_bind_groups, queue_quads},
-    systems::extract_divs,
+    systems::extract_quads,
 };
 
 pub struct MoonQuadRenderPlugin;
@@ -33,7 +33,10 @@ impl Plugin for MoonQuadRenderPlugin {
             .init_resource::<SpecializedRenderPipelines<UiQuadPipeline>>()
             .add_render_command::<TransparentUi, DrawUiQuad>()
             .add_systems(RenderStartup, init_ui_quad_pipeline)
-            .add_systems(ExtractSchedule, extract_divs.in_set(ExtractUiSystems::Divs))
+            .add_systems(
+                ExtractSchedule,
+                extract_quads.in_set(ExtractUiSystems::Divs),
+            )
             .add_systems(
                 Render,
                 (
