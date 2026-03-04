@@ -6,6 +6,7 @@ use bevy_ecs::{
     prelude::Res,
     system::{Commands, Query, ResMut},
 };
+use bevy_math::Mat4;
 use bevy_render::{Extract, sync_world::TemporaryRenderEntity};
 use bevy_transform::components::GlobalTransform;
 
@@ -78,7 +79,7 @@ fn extract_quad(
     let corner_radii = div.corner_radii.to_array(); // should be computed_layout.corner_radii
     let border_widths = computed_layout.border_widths.to_array();
 
-    let matrix = transform.affine().to_cols_array_2d();
+    let matrix = Mat4::from(transform.affine()).to_cols_array_2d();
 
     let render_entity = commands.spawn(TemporaryRenderEntity).id();
 

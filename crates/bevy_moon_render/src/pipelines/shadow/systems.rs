@@ -8,7 +8,7 @@ use bevy_ecs::{
     prelude::Res,
     system::{Commands, Query, ResMut},
 };
-use bevy_math::{Affine3A, vec2};
+use bevy_math::{Affine3A, Mat4, vec2};
 use bevy_render::{Extract, sync_world::TemporaryRenderEntity};
 use bevy_transform::components::GlobalTransform;
 
@@ -95,9 +95,7 @@ fn extract_from_single_div(
         let blur_radius = shadow.blur_radius;
         let color = shadow.color.to_linear().to_f32_array();
 
-        let matrix = affine
-            .mul(Affine3A::from_translation(offset))
-            .to_cols_array_2d();
+        let matrix = Mat4::from(affine.mul(Affine3A::from_translation(offset))).to_cols_array_2d();
 
         let render_entity = commands.spawn(TemporaryRenderEntity).id();
 

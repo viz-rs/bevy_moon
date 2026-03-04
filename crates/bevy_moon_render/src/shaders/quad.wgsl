@@ -1,6 +1,5 @@
 #import bevy_render::view::View
 
-#import bevy_moon::maths::{from_3x4_to_mat4x4}
 #import bevy_moon::quad::{
     normalize_vertex_index,
     get_vertex_by_index, 
@@ -18,10 +17,10 @@
 struct VertexInput {
     @builtin(vertex_index) vertex_id: u32,
 
-    @location(0) x_axis: vec3<f32>,
-    @location(1) y_axis: vec3<f32>,
-    @location(2) z_axis: vec3<f32>,
-    @location(3) translation: vec3<f32>,
+    @location(0) x_axis: vec4<f32>,
+    @location(1) y_axis: vec4<f32>,
+    @location(2) z_axis: vec4<f32>,
+    @location(3) translation: vec4<f32>,
 
     @location(4) color: vec4<f32>,
     @location(5) size: vec2<f32>,
@@ -51,7 +50,7 @@ fn vertex(in: VertexInput) -> VertexOutput {
     let uv = to_uv(vertex_index);
     let local_position = vertex * in.size;
     let world_from_local = vec4(local_position, 0.0, 1.0);
-    let matrix = from_3x4_to_mat4x4(in.x_axis, in.y_axis, in.z_axis, in.translation);
+    let matrix = mat4x4(in.x_axis, in.y_axis, in.z_axis, in.translation);
     let world_position = matrix * world_from_local;
     let clip_position = view.clip_from_world * world_position;
 

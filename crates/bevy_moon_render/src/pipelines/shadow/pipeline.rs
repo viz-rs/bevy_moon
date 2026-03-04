@@ -54,13 +54,13 @@ impl SpecializedRenderPipeline for UiShadowPipeline {
             VertexStepMode::Instance,
             vec![
                 // x_axis
-                VertexFormat::Float32x3,
+                VertexFormat::Float32x4,
                 // y_axis
-                VertexFormat::Float32x3,
+                VertexFormat::Float32x4,
                 // z_axis
-                VertexFormat::Float32x3,
+                VertexFormat::Float32x4,
                 // translation
-                VertexFormat::Float32x3,
+                VertexFormat::Float32x4,
                 // color
                 VertexFormat::Float32x4,
                 // size

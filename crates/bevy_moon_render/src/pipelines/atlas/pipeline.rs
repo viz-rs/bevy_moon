@@ -52,24 +52,22 @@ impl SpecializedRenderPipeline for UiAtlasPipeline {
             VertexStepMode::Instance,
             vec![
                 // x_axis
-                VertexFormat::Float32x3,
+                VertexFormat::Float32x4,
                 // y_axis
-                VertexFormat::Float32x3,
+                VertexFormat::Float32x4,
                 // z_axis
-                VertexFormat::Float32x3,
+                VertexFormat::Float32x4,
                 // translation
-                VertexFormat::Float32x3,
+                VertexFormat::Float32x4,
                 // color
                 VertexFormat::Float32x4,
                 // size
                 VertexFormat::Float32x2,
-                // flags
-                VertexFormat::Uint32,
                 // corner_radii
                 VertexFormat::Float32x4,
-                // glyph: [left, top, scale]
-                // image: [ObjectPosition.x, ObjectPosition.y, ObjectFit]
-                VertexFormat::Float32x3,
+                // glyph: [flags, scale, left, top]
+                // image: [flags, ObjectFit, ObjectPosition.x, ObjectPosition.y]
+                VertexFormat::Float32x4,
                 // flipped
                 VertexFormat::Uint32x2,
             ],

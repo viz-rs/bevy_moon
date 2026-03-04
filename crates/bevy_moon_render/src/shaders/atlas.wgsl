@@ -1,6 +1,5 @@
 #import bevy_render::view::View
 
-#import bevy_moon::maths::{from_3x4_to_mat4x4}
 #import bevy_moon::flags::{GLYPH, enabled}
 #import bevy_moon::quad::{
     normalize_vertex_index,
@@ -21,20 +20,19 @@
 struct VertexInput {
     @builtin(vertex_index) vertex_id: u32,
 
-    @location(0) x_axis: vec3<f32>,
-    @location(1) y_axis: vec3<f32>,
-    @location(2) z_axis: vec3<f32>,
-    @location(3) translation: vec3<f32>,
+    @location(0) x_axis: vec4<f32>,
+    @location(1) y_axis: vec4<f32>,
+    @location(2) z_axis: vec4<f32>,
+    @location(3) translation: vec4<f32>,
 
     @location(4) color: vec4<f32>,
     @location(5) size: vec2<f32>,
-    @location(6) flags: u32,
-    @location(7) corner_radii: vec4<f32>,
+    @location(6) corner_radii: vec4<f32>,
 
-    // glyph: [left, top, scale]
-    // image: [ObjectPosition.x, ObjectPosition.y, ObjectFit]
-    @location(8) extra: vec3<f32>,
-    @location(9) flipped: vec2<u32>,
+    // glyph: [flags, scale, left, top]
+    // image: [flags, ObjectFit, ObjectPosition.x, ObjectPosition.y]
+    @location(7) extra: vec4<f32>,
+    @location(8) flipped: vec2<u32>,
 };
 
 struct VertexOutput {
@@ -45,10 +43,9 @@ struct VertexOutput {
 
     @location(2) @interpolate(flat) color: vec4<f32>,
     @location(3) @interpolate(flat) size: vec2<f32>,
-    @location(4) @interpolate(flat) flags: u32,
-    @location(5) @interpolate(flat) corner_radii: vec4<f32>,
-    @location(6) @interpolate(flat) extra: vec3<f32>,
-    @location(7) @interpolate(flat) flipped: vec2<u32>,
+    @location(4) @interpolate(flat) corner_radii: vec4<f32>,
+    @location(5) @interpolate(flat) extra: vec4<f32>,
+    @location(6) @interpolate(flat) flipped: vec2<u32>,
 };
 
 @vertex
@@ -59,7 +56,7 @@ fn vertex(in: VertexInput) -> VertexOutput {
     let uv = to_uv(vertex_index);
     let local_position = vertex * in.size;
     let world_from_local = vec4(local_position, 0.0, 1.0);
-    let matrix = from_3x4_to_mat4x4(in.x_axis, in.y_axis, in.z_axis, in.translation);
+    let matrix = mat4x4(in.x_axis, in.y_axis, in.z_axis, in.translation);
     let world_position = matrix * world_from_local;
     let clip_position = view.clip_from_world * world_position;
 
@@ -69,7 +66,6 @@ fn vertex(in: VertexInput) -> VertexOutput {
         local_position,
         in.color,
         in.size,
-        in.flags,
         in.corner_radii,
         in.extra,
         in.flipped
@@ -80,13 +76,14 @@ fn vertex(in: VertexInput) -> VertexOutput {
 fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     let src_size = vec2<f32>(textureDimensions(atlas_texture, 0));
     let dst_size = in.size;
-    let position = in.extra.xy;
+    let flags = u32(in.extra.x);
+    let position = in.extra.zw;
     
     var color = in.color;
     var uv = atlas::flip_uv(in.uv, in.flipped);
 
-    if (in.flags == GLYPH) {
-        let scale_factor = in.extra.z;
+    if (flags == GLYPH) {
+        let scale_factor = in.extra.y;
         let current_src_size = src_size * scale_factor;
         uv = atlas::glyph_tile_uv(uv, dst_size, current_src_size, position);
         // let a = textureSample(atlas_texture, atlas_sampler, uv).a;
@@ -95,7 +92,7 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
         color *= d;
         return color;
     } else {
-        let mode = u32(in.extra.z);
+        let mode = u32(in.extra.y);
         uv = atlas::object_fit(uv, dst_size, src_size, position, mode);
         let d = textureSample(atlas_texture, atlas_sampler, uv);
         color *= d;

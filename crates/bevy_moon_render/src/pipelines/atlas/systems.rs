@@ -8,7 +8,7 @@ use bevy_ecs::{
     system::{Commands, Query, ResMut},
 };
 use bevy_image::TRANSPARENT_IMAGE_HANDLE;
-use bevy_math::{Affine3A, Vec3};
+use bevy_math::{Affine3A, Mat4, Vec3};
 use bevy_render::{Extract, sync_world::TemporaryRenderEntity};
 use bevy_text::{ComputedTextBlock, GlyphAtlasInfo, PositionedGlyph, TextColor, TextLayoutInfo};
 use bevy_transform::components::GlobalTransform;
@@ -84,12 +84,15 @@ fn extract_single_image(
     let size = computed_layout.size.to_array();
     let color = image.color.to_linear().to_f32_array();
     let corner_radii = div.corner_radii.to_array(); // should be computed_layout.corner_radii
-    let extra = (*image.object_position)
-        .extend(image.object_fit as isize as f32)
-        .to_array();
+    let extra = [
+        0.0,
+        image.object_fit as isize as f32,
+        image.object_position.x,
+        image.object_position.y,
+    ];
     let flipped = image.flipped.map(Into::into);
 
-    let matrix = transform.affine().to_cols_array_2d();
+    let matrix = Mat4::from(transform.affine()).to_cols_array_2d();
 
     let render_entity = commands.spawn(TemporaryRenderEntity).id();
 
@@ -221,14 +224,16 @@ fn extract_single_text(
 
         let color = color.to_f32_array();
         let top_left = rect.min * scale_factor_recip;
-        let extra = top_left.extend(scale_factor_recip).to_array(); // glyph tile's top-left position
         let size = rect.size().mul(scale_factor_recip).to_array();
         let position_flipped = position.mul(FLIP_Y).extend(0.0);
 
-        let matrix = affine
-            .mul(Affine3A::from_translation(position_flipped))
-            .mul(scale_factor_affine)
-            .to_cols_array_2d();
+        let matrix = Mat4::from(
+            affine
+                .mul(Affine3A::from_translation(position_flipped))
+                .mul(scale_factor_affine),
+        )
+        .to_cols_array_2d();
+        let extra = [1.0, scale_factor_recip, top_left.x, top_left.y];
 
         let render_entity = commands.spawn(TemporaryRenderEntity).id();
 
