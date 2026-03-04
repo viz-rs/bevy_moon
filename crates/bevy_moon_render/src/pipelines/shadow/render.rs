@@ -135,18 +135,16 @@ pub fn prepare_shadows(
         extracted_ui_shadows
             .instances
             .get(item.extracted_index)
-            // SAFETY: if remove the filter
-            // .filter(|extracted_ui_instance| extracted_ui_instance.entity.0 == item.entity())
             .map(|extracted_ui_instance| (item, extracted_ui_instance.instance))
     }) {
-        let render_entity = *live_entities
+        let render_entity = live_entities
             .entry(item.main_entity())
             .or_insert_with(|| item.entity());
 
         let index = ui_shadow_meta.instance_buffer.push(instance) as u32;
 
         batches
-            .entry(render_entity)
+            .entry(*render_entity)
             .and_modify(|batch| {
                 batch.range.end = index + 1;
             })

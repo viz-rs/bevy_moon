@@ -135,8 +135,6 @@ pub fn prepare_divs(
         extracted_ui_instances
             .instances
             .get(item.extracted_index)
-            // SAFETY: if remove the filter
-            // .filter(|extracted_ui_instance| extracted_ui_instance.entity.0 == item.entity())
             .map(|extracted_ui_instance| (item, extracted_ui_instance.instance))
     }) {
         let index = ui_quad_meta.instance_buffer.push(instance) as u32;
