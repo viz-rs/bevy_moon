@@ -2,7 +2,7 @@ use bytemuck::{Pod, Zeroable};
 
 #[repr(C)]
 #[derive(Clone, Copy, Pod, Zeroable)]
-pub struct UiInstance {
+pub struct UiAtlas {
     /// A `[[f32; 3]; 4]` 3D array storing data in column major order (3Cx4R).
     ///
     /// Sees [`bevy_math::Affine3A::to_cols_array_2d`].
@@ -12,8 +12,6 @@ pub struct UiInstance {
     pub size: [f32; 2],
     pub flags: u32,
     pub corner_radii: [f32; 4],
-    pub border_color: [f32; 4],
-    pub border_widths: [f32; 4],
 
     /// | Type  | Data                                              |
     /// | ----- | ------------------------------------------------- |
@@ -23,35 +21,27 @@ pub struct UiInstance {
     pub flipped: [u32; 2],
 }
 
-impl Default for UiInstance {
+impl Default for UiAtlas {
     fn default() -> Self {
-        Self::DEFAULT
+        Self::IMAGE
     }
 }
 
-impl UiInstance {
-    /// The normal instance. Its by default.
-    pub const DEFAULT: Self = Self {
+impl UiAtlas {
+    /// The `image` instance.
+    pub const IMAGE: Self = Self {
         matrix: [[0.0; 3]; 4],
         color: [0.0; 4],
         size: [0.0; 2],
         flags: 0,
         corner_radii: [0.0; 4],
-        border_color: [0.0; 4],
-        border_widths: [0.0; 4],
         extra: [0.0; 3],
         flipped: [0; 2],
     };
 
-    /// The `image` instance.
-    pub const IMAGE: Self = Self {
-        flags: 1,
-        ..Self::DEFAULT
-    };
-
     /// The `text` instance.
     pub const TEXT: Self = Self {
-        flags: 3,
-        ..Self::DEFAULT
+        flags: 1,
+        ..Self::IMAGE
     };
 }

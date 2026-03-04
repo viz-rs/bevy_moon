@@ -60,8 +60,8 @@ impl Plugin for MoonCorePlugin {
                 (
                     text::measure_text_system
                         .chain()
+                        .after(bevy_text::detect_text_needs_rerender)
                         .after(bevy_text::load_font_assets_into_font_collection)
-                        // .after(bevy_text::detect_text_needs_rerender::<text::Text>)
                         .in_set(UiSystems::Content)
                         // Potential conflict: `Assets<Image>`
                         // Since both systems will only ever insert new [`Image`] assets,

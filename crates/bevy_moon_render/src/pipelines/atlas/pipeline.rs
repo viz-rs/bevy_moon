@@ -9,36 +9,34 @@ use bevy_render::{
     render_resource::{
         BindGroupLayoutDescriptor, BindGroupLayoutEntries, BlendState, ColorTargetState,
         ColorWrites, FragmentState, FrontFace, MultisampleState, PolygonMode, PrimitiveState,
-        RenderPipelineDescriptor, ShaderStages, SpecializedRenderPipeline, TextureFormat,
-        VertexState, VertexStepMode, binding_types::uniform_buffer,
+        RenderPipelineDescriptor, SamplerBindingType, ShaderStages, SpecializedRenderPipeline,
+        TextureFormat, TextureSampleType, VertexState, VertexStepMode,
+        binding_types::{sampler, texture_2d, uniform_buffer},
     },
     view::{ViewTarget, ViewUniform},
 };
-use bevy_shader::{Shader, ShaderDefVal};
+use bevy_shader::Shader;
 use bevy_sprite_render::Mesh2dPipelineKey;
 use bevy_utils::default;
 
 #[derive(Resource, Clone)]
-pub struct UiShadowPipeline {
+pub struct UiAtlasPipeline {
     pub view_layout: BindGroupLayoutDescriptor,
+    pub texture_layout: BindGroupLayoutDescriptor,
     pub shader: Handle<Shader>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct UiShadowPipelineKey {
+pub struct UiAtlasPipelineKey {
     pub mesh_key: Mesh2dPipelineKey,
-    /// Number of samples, a higher value results in better quality shadows.
-    pub samples: u32,
+    // pub anti_alias: bool,
 }
 
-impl SpecializedRenderPipeline for UiShadowPipeline {
-    type Key = UiShadowPipelineKey;
+impl SpecializedRenderPipeline for UiAtlasPipeline {
+    type Key = UiAtlasPipelineKey;
 
     fn specialize(&self, key: Self::Key) -> RenderPipelineDescriptor {
-        let shader_defs = vec![ShaderDefVal::UInt(
-            "SHADOW_SAMPLES".to_string(),
-            key.samples,
-        )];
+        let shader_defs = vec![];
 
         let mesh_key = key.mesh_key;
 
@@ -48,7 +46,7 @@ impl SpecializedRenderPipeline for UiShadowPipeline {
         };
         let count = mesh_key.msaa_samples();
 
-        let layout = vec![self.view_layout.clone()];
+        let layout = vec![self.view_layout.clone(), self.texture_layout.clone()];
 
         let vertex_layout = VertexBufferLayout::from_vertex_formats(
             VertexStepMode::Instance,
@@ -65,10 +63,15 @@ impl SpecializedRenderPipeline for UiShadowPipeline {
                 VertexFormat::Float32x4,
                 // size
                 VertexFormat::Float32x2,
+                // flags
+                VertexFormat::Uint32,
                 // corner_radii
                 VertexFormat::Float32x4,
-                // blur_radius
-                VertexFormat::Float32,
+                // glyph: [left, top, scale]
+                // image: [ObjectPosition.x, ObjectPosition.y, ObjectFit]
+                VertexFormat::Float32x3,
+                // flipped
+                VertexFormat::Uint32x2,
             ],
         );
 
@@ -104,20 +107,32 @@ impl SpecializedRenderPipeline for UiShadowPipeline {
                 alpha_to_coverage_enabled: false,
             },
             layout,
-            label: Some("moon_ui_shadows_pipeline".into()),
+            label: Some("moon_ui_atlas_pipeline".into()),
             ..default()
         }
     }
 }
 
-pub fn init_ui_shadow_pipeline(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn init_ui_atlas_pipeline(mut commands: Commands, asset_server: Res<AssetServer>) {
     let view_layout = BindGroupLayoutDescriptor::new(
-        "moon_ui_shadow_view_layout",
+        "moon_ui_atlas_view_layout",
         &BindGroupLayoutEntries::single(ShaderStages::VERTEX, uniform_buffer::<ViewUniform>(true)),
     );
 
-    commands.insert_resource(UiShadowPipeline {
+    let texture_layout = BindGroupLayoutDescriptor::new(
+        "moon_ui_atlas_texture_layout",
+        &BindGroupLayoutEntries::sequential(
+            ShaderStages::FRAGMENT,
+            (
+                texture_2d(TextureSampleType::Float { filterable: true }),
+                sampler(SamplerBindingType::Filtering),
+            ),
+        ),
+    );
+
+    commands.insert_resource(UiAtlasPipeline {
         view_layout,
-        shader: load_embedded_asset!(asset_server.as_ref(), "../../shaders/shadow.wgsl"),
+        texture_layout,
+        shader: load_embedded_asset!(asset_server.as_ref(), "../../shaders/atlas.wgsl"),
     });
 }

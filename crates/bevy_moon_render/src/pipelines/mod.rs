@@ -1,7 +1,7 @@
 use std::{marker::PhantomData, ops::Range};
 
 use bevy_asset::AssetId;
-use bevy_ecs::{component::Component, entity::Entity, resource::Resource};
+use bevy_ecs::{component::Component, entity::Entity, resource::Resource, schedule::SystemSet};
 use bevy_image::Image;
 use bevy_platform::collections::HashMap;
 use bevy_render::{
@@ -10,8 +10,13 @@ use bevy_render::{
 };
 use bytemuck::{NoUninit, Pod, Zeroable};
 
-pub mod primitive;
-pub mod shadow;
+mod atlas;
+mod quad;
+mod shadow;
+
+mod plugin;
+
+pub use plugin::MoonInternalRenderPlugin;
 
 #[derive(Resource)]
 pub struct UiMeta<T>
@@ -86,4 +91,13 @@ pub struct ExtractedUiInstance<T> {
 #[derive(Resource, Default)]
 pub struct ExtractedUiInstances<T> {
     pub instances: Vec<ExtractedUiInstance<T>>,
+}
+
+#[derive(SystemSet, Hash, PartialEq, Eq, Clone, Debug)]
+pub enum ExtractUiSystems {
+    CameraViews,
+    Shadows,
+    Divs,
+    Images,
+    Texts,
 }

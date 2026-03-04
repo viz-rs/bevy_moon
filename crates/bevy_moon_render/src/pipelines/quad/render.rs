@@ -1,4 +1,3 @@
-use bevy_asset::{AssetEvent, AssetId};
 use bevy_ecs::{
     entity::{Entity, EntityHashMap},
     query::With,
@@ -7,45 +6,41 @@ use bevy_ecs::{
 use bevy_math::FloatOrd;
 use bevy_moon_core::prelude::UiStackMap;
 use bevy_render::{
-    render_asset::RenderAssets,
     render_phase::{
         DrawFunctionId, DrawFunctions, PhaseItem, PhaseItemExtraIndex, ViewSortedRenderPhases,
     },
     render_resource::{BindGroupEntries, PipelineCache, SpecializedRenderPipelines},
     renderer::{RenderDevice, RenderQueue},
     sync_world::MainEntity,
-    texture::GpuImage,
     view::{ExtractedView, ViewUniforms},
 };
-use bevy_sprite_render::SpriteAssetEvents;
 use indexmap::IndexMap;
 
 use crate::{
-    pipelines::UiTextureBindGroups,
     transparent::{RenderPhasesFilter, TransparentUi},
     view::{MoonUiCameraView, MoonUiOptions, MoonUiViewTarget},
 };
 
 use super::{
-    ExtractedUiInstances, UiInstanceBatch, UiInstanceMeta, UiInstanceViewBindGroup,
-    draw::DrawUi,
-    pipeline::{UiPipeline, UiPipelineKey},
+    ExtractedUiQuads, UiQuadBatch, UiQuadMeta, UiQuadViewBindGroup,
+    draw::DrawUiQuad,
+    pipeline::{UiQuadPipeline, UiQuadPipelineKey},
 };
 
 pub fn queue_divs(
     render_targets: Query<(MainEntity, &MoonUiCameraView, &MoonUiOptions)>,
     render_views: Query<&ExtractedView, With<MoonUiViewTarget>>,
-    extracted_ui_instances: Res<ExtractedUiInstances>,
+    extracted_ui_quads: Res<ExtractedUiQuads>,
     ui_stack_map: Res<UiStackMap>,
-    ui_pipeline: Res<UiPipeline>,
+    ui_quad_pipeline: Res<UiQuadPipeline>,
     pipeline_cache: Res<PipelineCache>,
     draw_functions: Res<DrawFunctions<TransparentUi>>,
-    mut pipelines: ResMut<SpecializedRenderPipelines<UiPipeline>>,
+    mut pipelines: ResMut<SpecializedRenderPipelines<UiQuadPipeline>>,
     mut render_phases: ResMut<ViewSortedRenderPhases<TransparentUi>>,
 ) {
-    let draw_function = draw_functions.read().id::<DrawUi>();
+    let draw_function = draw_functions.read().id::<DrawUiQuad>();
 
-    for (extracted_index, div) in extracted_ui_instances.instances.iter().enumerate() {
+    for (extracted_index, div) in extracted_ui_quads.instances.iter().enumerate() {
         let Some(ui_stack) = ui_stack_map.get(&div.camera_entity) else {
             return;
         };
@@ -63,8 +58,8 @@ pub fn queue_divs(
 
         let pipeline = pipelines.specialize(
             &pipeline_cache,
-            &ui_pipeline,
-            UiPipelineKey {
+            &ui_quad_pipeline,
+            UiQuadPipelineKey {
                 mesh_key,
                 // @TODO(fundon): add an `UiAntiAlias` option
                 // anti_alias: true,
@@ -92,11 +87,11 @@ pub fn queue_divs(
     }
 }
 
-pub fn prepare_div_view_bind_groups(
+pub fn prepare_view_bind_groups(
     mut commands: Commands,
     render_device: Res<RenderDevice>,
     pipeline_cache: Res<PipelineCache>,
-    ui_pipeline: Res<UiPipeline>,
+    ui_quad_pipeline: Res<UiQuadPipeline>,
     view_uniforms: Res<ViewUniforms>,
     views: Query<Entity, (With<ExtractedView>, With<MoonUiViewTarget>)>,
 ) {
@@ -106,122 +101,64 @@ pub fn prepare_div_view_bind_groups(
 
     for entity in &views {
         let value = render_device.create_bind_group(
-            "moon_ui_view_bind_group",
-            &pipeline_cache.get_bind_group_layout(&ui_pipeline.view_layout),
+            "moon_ui_quad_view_bind_group",
+            &pipeline_cache.get_bind_group_layout(&ui_quad_pipeline.view_layout),
             &BindGroupEntries::single(view_binding.clone()),
         );
 
         commands
             .entity(entity)
-            .insert(UiInstanceViewBindGroup::new(value));
+            .insert(UiQuadViewBindGroup::new(value));
     }
 }
 
 pub fn prepare_divs(
     render_device: Res<RenderDevice>,
     render_queue: Res<RenderQueue>,
-    pipeline_cache: Res<PipelineCache>,
-    ui_pipeline: Res<UiPipeline>,
-    gpu_images: Res<RenderAssets<GpuImage>>,
-    events: Res<SpriteAssetEvents>,
     draw_functions: Res<DrawFunctions<TransparentUi>>,
     mut commands: Commands,
-    mut ui_meta: ResMut<UiInstanceMeta>,
-    mut extracted_ui_instances: ResMut<ExtractedUiInstances>,
-    mut texture_bind_groups: ResMut<UiTextureBindGroups>,
+    mut ui_quad_meta: ResMut<UiQuadMeta>,
+    mut extracted_ui_instances: ResMut<ExtractedUiQuads>,
     mut render_phases: ResMut<ViewSortedRenderPhases<TransparentUi>>,
-    // maps `main entity - texture` to `render entity`
-    mut live_entities: Local<IndexMap<(MainEntity, AssetId<bevy_image::Image>), Entity>>,
+    // maps `main entity` to `render entity`
+    mut live_entities: Local<IndexMap<MainEntity, Entity>>,
     mut cached_draw_function: Local<Option<DrawFunctionId>>,
 ) {
-    // If an image has changed, the GpuImage has (probably) changed
-    for event in &events.images {
-        match event {
-          AssetEvent::Added { .. } |
-          AssetEvent::Unused { .. } |
-          // Images don't have dependencies
-          AssetEvent::LoadedWithDependencies { .. } => {}
-          AssetEvent::Modified { id } | AssetEvent::Removed { id } => {
-              texture_bind_groups.values.remove(id);
-          }
-      };
-    }
-
-    ui_meta.instance_buffer.clear();
+    ui_quad_meta.instance_buffer.clear();
 
     let draw_function =
-        *cached_draw_function.get_or_insert_with(|| draw_functions.read().id::<DrawUi>());
+        *cached_draw_function.get_or_insert_with(|| draw_functions.read().id::<DrawUiQuad>());
 
-    let mut batches = EntityHashMap::<UiInstanceBatch>::with_capacity(live_entities.capacity());
+    let mut batches = EntityHashMap::<UiQuadBatch>::with_capacity(live_entities.capacity());
 
-    for (item, (instance, texture)) in render_phases.filter(draw_function).filter_map(|item| {
+    for (item, instance) in render_phases.filter(draw_function).filter_map(|item| {
         extracted_ui_instances
             .instances
             .get(item.extracted_index)
             // SAFETY: if remove the filter
             // .filter(|extracted_ui_instance| extracted_ui_instance.entity.0 == item.entity())
-            .map(|extracted_ui_instance| {
-                (
-                    item,
-                    (
-                        extracted_ui_instance.instance,
-                        extracted_ui_instance.texture,
-                    ),
-                )
-            })
+            .map(|extracted_ui_instance| (item, extracted_ui_instance.instance))
     }) {
-        let Some(gpu_image) = (texture != AssetId::invalid())
-            .then(|| gpu_images.get(texture))
-            .flatten()
-        else {
-            continue;
-        };
+        let index = ui_quad_meta.instance_buffer.push(instance) as u32;
 
-        let index = ui_meta.instance_buffer.push(instance) as u32;
-
-        texture_bind_groups
-            .values
-            .entry(texture)
-            .or_insert_with(|| {
-                render_device.create_bind_group(
-                    "ui_texture_bind_group",
-                    &pipeline_cache.get_bind_group_layout(&ui_pipeline.texture_layout),
-                    &BindGroupEntries::sequential((&gpu_image.texture_view, &gpu_image.sampler)),
-                )
-            });
-
-        let key = (item.main_entity(), texture);
-
-        // Clears the live entities when a new texture is assigned and keeps its capacity.
-        // This is also used to handle multiple spans with multiple fonts in same text container.
-        //
-        // An example for textures order: [A, A, B, A, C, B, B, B, C]
-        //                                 ↓     ↓     ↓  ↓        ↓
-        if !live_entities.is_empty() && !live_entities.contains_key(&key) {
-            live_entities.clear();
-        }
-
-        let render_entity = live_entities.entry(key).or_insert_with(|| item.entity());
+        let render_entity = live_entities
+            .entry(item.main_entity())
+            .or_insert_with(|| item.entity());
 
         batches
             .entry(*render_entity)
             .and_modify(|batch| {
                 batch.range.end = index + 1;
-                // updates it with real texture
-                if batch.texture == texture {
-                    return;
-                }
-                batch.texture = texture;
             })
             .or_insert_with(|| {
                 // only the first phase needs to be updated
                 // phases under the same entity will be batch processed
                 item.batch_range_mut().end += 1;
-                UiInstanceBatch::new(index..index + 1).with_texture(texture)
+                UiQuadBatch::new(index..index + 1)
             });
     }
 
-    ui_meta
+    ui_quad_meta
         .instance_buffer
         .write_buffer(&render_device, &render_queue);
 

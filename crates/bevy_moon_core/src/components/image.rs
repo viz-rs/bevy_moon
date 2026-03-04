@@ -16,7 +16,7 @@ pub struct Image {
     pub handle: Handle<bevy_image::Image>,
     pub object_fit: ObjectFit,
     pub object_position: ObjectPosition,
-    pub flip: [bool; 2],
+    pub flipped: [bool; 2],
 }
 
 impl Default for Image {
@@ -31,7 +31,7 @@ impl Image {
         handle: TRANSPARENT_IMAGE_HANDLE,
         object_fit: ObjectFit::Cover,
         object_position: ObjectPosition::CENTER,
-        flip: [false; 2],
+        flipped: [false; 2],
     };
 
     pub fn object_fit_fill(mut self) -> Self {
@@ -65,12 +65,12 @@ impl Image {
     }
 
     pub fn flip_x(mut self) -> Self {
-        self.flip[0] ^= true;
+        self.flipped[0] ^= true;
         self
     }
 
     pub fn flip_y(mut self) -> Self {
-        self.flip[1] ^= true;
+        self.flipped[1] ^= true;
         self
     }
 }

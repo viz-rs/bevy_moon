@@ -23,7 +23,7 @@ use super::{ExtractedUiShadows, UiShadow};
 
 pub fn extract_shadows(
     mut commands: Commands,
-    mut extracted_ui_instances: ResMut<ExtractedUiShadows>,
+    mut extracted_ui_shadows: ResMut<ExtractedUiShadows>,
     ui_stack_map: Extract<Res<UiStackMap>>,
     div_query: Extract<
         Query<(
@@ -35,7 +35,7 @@ pub fn extract_shadows(
         )>,
     >,
 ) {
-    extracted_ui_instances.instances.clear();
+    extracted_ui_shadows.instances.clear();
 
     for (&camera_entity, ui_stack) in ui_stack_map.iter() {
         for div in ui_stack
@@ -43,19 +43,14 @@ pub fn extract_shadows(
             .iter()
             .flat_map(|range| div_query.iter_many(&ui_stack.entities[range.clone()]))
         {
-            extract_single_div(
-                &mut commands,
-                &mut extracted_ui_instances,
-                div,
-                camera_entity,
-            );
+            extract_from_single_div(&mut commands, &mut extracted_ui_shadows, div, camera_entity);
         }
     }
 }
 
-fn extract_single_div(
+fn extract_from_single_div(
     commands: &mut Commands,
-    extracted_ui_instances: &mut ExtractedUiShadows,
+    extracted_ui_shadows: &mut ExtractedUiShadows,
     (entity, transform, inherited_visibility, computed_layout, div): (
         Entity,
         &GlobalTransform,
@@ -106,7 +101,7 @@ fn extract_single_div(
 
         let render_entity = commands.spawn(TemporaryRenderEntity).id();
 
-        extracted_ui_instances.instances.push(ExtractedUiInstance {
+        extracted_ui_shadows.instances.push(ExtractedUiInstance {
             index,
             camera_entity,
             entity: (render_entity, main_entity),

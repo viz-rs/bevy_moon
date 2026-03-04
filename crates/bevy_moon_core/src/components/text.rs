@@ -32,12 +32,12 @@ use super::div::Div;
 #[reflect(Component, Default, Debug, PartialEq, Clone)]
 #[require(
     Div,
-    TextLayout,
-    TextFont,
-    TextColor,
-    LineHeight,
-    TextFlags,
     ContentSize,
+    LineHeight,
+    TextColor,
+    TextFlags,
+    TextFont,
+    TextLayout,
     FontHinting::Enabled
 )]
 pub struct Text(pub String);
@@ -128,7 +128,7 @@ impl Measure for TextMeasure {
         let scale_up_fn = |v| v * scale_factor;
         let scale_down_fn = |v| v * scale_factor.recip();
 
-        // scales up them from taffy layout engine
+        // scales up when there are from taffy layout engine
         let width = width.map(scale_up_fn);
         let height = height.map(scale_up_fn);
 
@@ -171,7 +171,7 @@ impl Measure for TextMeasure {
             },
         };
 
-        // scales down and returns to taffy layout engine
+        // scales down when it be returned to taffy layout engine
         scale_down_fn(size).ceil()
     }
 
@@ -346,6 +346,7 @@ pub fn text_system(
             || target_info.is_changed()
             || hinting.is_changed()
             || text_flags.needs_recompute;
+
         if !is_changed {
             continue;
         }
@@ -361,8 +362,8 @@ pub fn text_system(
             // With `NoWrap` set, no constraints are placed on the width of the text.
             TextBounds::UNBOUNDED
         } else {
-            // We currently don't compute the size of the div with a scale factor,
-            // so should apply the scale factor to the text layout engine.
+            // We currently don't compute the size of the node with a scale factor,
+            // and should apply the scale factor to the text layout engine.
             TextBounds::from(computed_layout.size * scale_factor)
         };
 

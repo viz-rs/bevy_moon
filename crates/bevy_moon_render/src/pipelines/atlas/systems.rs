@@ -1,12 +1,10 @@
 use std::ops::Mul;
 
-use bevy_asset::AssetId;
 use bevy_camera::visibility::InheritedVisibility;
-use bevy_color::{Alpha, Color, ColorToComponents};
+use bevy_color::{Alpha, ColorToComponents};
 use bevy_ecs::{
     entity::Entity,
     prelude::Res,
-    schedule::SystemSet,
     system::{Commands, Query, ResMut},
 };
 use bevy_image::TRANSPARENT_IMAGE_HANDLE;
@@ -20,112 +18,13 @@ use bevy_moon_core::{
     prelude::{ComputedLayout, Div, Image, Text, UiStackMap},
 };
 
-use crate::pipelines::ExtractedUiInstance;
+use crate::pipelines::{ExtractedUiInstance, atlas::ExtractedUiAtlases};
 
-use super::{ExtractedUiInstances, UiInstance};
-
-#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
-pub enum ExtractUiSystems {
-    CameraViews,
-    Shadows,
-    Divs,
-    Images,
-    Texts,
-}
-
-pub fn extract_divs(
-    mut commands: Commands,
-    mut extracted_ui_instances: ResMut<ExtractedUiInstances>,
-    ui_stack_map: Extract<Res<UiStackMap>>,
-    div_query: Extract<
-        Query<(
-            Entity,
-            &GlobalTransform,
-            &InheritedVisibility,
-            &ComputedLayout,
-            &Div,
-        )>,
-    >,
-) {
-    extracted_ui_instances.instances.clear();
-
-    for (&camera_entity, ui_stack) in ui_stack_map.iter() {
-        for div in ui_stack
-            .ranges
-            .iter()
-            .flat_map(|range| div_query.iter_many(&ui_stack.entities[range.clone()]))
-        {
-            extract_single_div(
-                &mut commands,
-                &mut extracted_ui_instances,
-                div,
-                camera_entity,
-            );
-        }
-    }
-}
-
-fn extract_single_div(
-    commands: &mut Commands,
-    extracted_ui_instances: &mut ExtractedUiInstances,
-    (entity, transform, inherited_visibility, computed_layout, div): (
-        Entity,
-        &GlobalTransform,
-        &InheritedVisibility,
-        &ComputedLayout,
-        &Div,
-    ),
-    camera_entity: Entity,
-) {
-    if !inherited_visibility.get() {
-        return;
-    }
-    if computed_layout.is_empty() {
-        return;
-    }
-
-    let color = div.background.unwrap_or(Color::NONE);
-    let border_color = div.border_color.unwrap_or(Color::NONE);
-
-    if color.is_fully_transparent() && border_color.is_fully_transparent() {
-        return;
-    }
-
-    let color = color.to_linear().to_f32_array();
-    let border_color = border_color.to_linear().to_f32_array();
-
-    let index = div.stack_index as f32;
-    let main_entity = entity.into();
-
-    let size = computed_layout.size.to_array();
-    let corner_radii = div.corner_radii.to_array(); // should be computed_layout.corner_radii
-    let border_widths = computed_layout.border_widths.to_array();
-
-    let matrix = transform.affine().to_cols_array_2d();
-
-    let render_entity = commands.spawn(TemporaryRenderEntity).id();
-
-    extracted_ui_instances.instances.push(ExtractedUiInstance {
-        index,
-        camera_entity,
-        entity: (render_entity, main_entity),
-        texture: AssetId::default(),
-
-        instance: UiInstance {
-            matrix,
-            color,
-            size,
-            corner_radii,
-            border_color,
-            border_widths,
-            ..UiInstance::DEFAULT
-        },
-    });
-}
+use super::UiAtlas;
 
 pub fn extract_images(
     mut commands: Commands,
-    mut extracted_ui_instances: ResMut<ExtractedUiInstances>,
+    mut extracted_ui_instances: ResMut<ExtractedUiAtlases>,
     ui_stack_map: Extract<Res<UiStackMap>>,
     image_query: Extract<
         Query<(
@@ -156,7 +55,7 @@ pub fn extract_images(
 
 fn extract_single_image(
     commands: &mut Commands,
-    extracted_ui_instances: &mut ExtractedUiInstances,
+    extracted_ui_atlases: &mut ExtractedUiAtlases,
     (entity, transform, inherited_visibility, computed_layout, div, image): (
         Entity,
         &GlobalTransform,
@@ -185,8 +84,6 @@ fn extract_single_image(
     let size = computed_layout.size.to_array();
     let color = image.color.to_linear().to_f32_array();
     let corner_radii = div.corner_radii.to_array(); // should be computed_layout.corner_radii
-    let border_color = Color::NONE.to_linear().to_f32_array(); // ignore border color
-    let border_widths = computed_layout.border_widths.to_array();
     let extra = (*image.object_position)
         .extend(image.object_fit as isize as f32)
         .to_array();
@@ -196,29 +93,27 @@ fn extract_single_image(
 
     let render_entity = commands.spawn(TemporaryRenderEntity).id();
 
-    extracted_ui_instances.instances.push(ExtractedUiInstance {
+    extracted_ui_atlases.instances.push(ExtractedUiInstance {
         index,
         camera_entity,
         entity: (render_entity, main_entity),
         texture: image.handle.id(),
 
-        instance: UiInstance {
+        instance: UiAtlas {
             matrix,
             color,
             size,
             corner_radii,
-            border_color,
-            border_widths,
             extra,
             flipped,
-            ..UiInstance::IMAGE
+            ..UiAtlas::IMAGE
         },
     });
 }
 
 pub fn extract_texts(
     mut commands: Commands,
-    mut extracted_ui_instances: ResMut<ExtractedUiInstances>,
+    mut extracted_ui_atlases: ResMut<ExtractedUiAtlases>,
     ui_stack_map: Extract<Res<UiStackMap>>,
     text_query: Extract<
         Query<(
@@ -243,7 +138,7 @@ pub fn extract_texts(
         {
             extract_single_text(
                 &mut commands,
-                &mut extracted_ui_instances,
+                &mut extracted_ui_atlases,
                 div,
                 &text_colors,
                 camera_entity,
@@ -254,7 +149,7 @@ pub fn extract_texts(
 
 fn extract_single_text(
     commands: &mut Commands,
-    extracted_ui_instances: &mut ExtractedUiInstances,
+    extracted_ui_atlases: &mut ExtractedUiAtlases,
     (
         entity,
         transform,
@@ -337,19 +232,19 @@ fn extract_single_text(
 
         let render_entity = commands.spawn(TemporaryRenderEntity).id();
 
-        extracted_ui_instances.instances.push(ExtractedUiInstance {
+        extracted_ui_atlases.instances.push(ExtractedUiInstance {
             index,
             camera_entity,
             entity: (render_entity, main_entity),
             texture,
 
-            instance: UiInstance {
+            instance: UiAtlas {
                 matrix,
                 color,
                 size,
                 corner_radii,
                 extra,
-                ..UiInstance::TEXT
+                ..UiAtlas::TEXT
             },
         });
     }

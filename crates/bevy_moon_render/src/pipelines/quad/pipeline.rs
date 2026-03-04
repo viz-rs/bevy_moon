@@ -9,9 +9,8 @@ use bevy_render::{
     render_resource::{
         BindGroupLayoutDescriptor, BindGroupLayoutEntries, BlendState, ColorTargetState,
         ColorWrites, FragmentState, FrontFace, MultisampleState, PolygonMode, PrimitiveState,
-        RenderPipelineDescriptor, SamplerBindingType, ShaderStages, SpecializedRenderPipeline,
-        TextureFormat, TextureSampleType, VertexState, VertexStepMode,
-        binding_types::{sampler, texture_2d, uniform_buffer},
+        RenderPipelineDescriptor, ShaderStages, SpecializedRenderPipeline, TextureFormat,
+        VertexState, VertexStepMode, binding_types::uniform_buffer,
     },
     view::{ViewTarget, ViewUniform},
 };
@@ -20,20 +19,19 @@ use bevy_sprite_render::Mesh2dPipelineKey;
 use bevy_utils::default;
 
 #[derive(Resource, Clone)]
-pub struct UiPipeline {
+pub struct UiQuadPipeline {
     pub view_layout: BindGroupLayoutDescriptor,
-    pub texture_layout: BindGroupLayoutDescriptor,
     pub shader: Handle<Shader>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct UiPipelineKey {
+pub struct UiQuadPipelineKey {
     pub mesh_key: Mesh2dPipelineKey,
     // pub anti_alias: bool,
 }
 
-impl SpecializedRenderPipeline for UiPipeline {
-    type Key = UiPipelineKey;
+impl SpecializedRenderPipeline for UiQuadPipeline {
+    type Key = UiQuadPipelineKey;
 
     fn specialize(&self, key: Self::Key) -> RenderPipelineDescriptor {
         // let shader_defs = key
@@ -51,7 +49,7 @@ impl SpecializedRenderPipeline for UiPipeline {
         };
         let count = mesh_key.msaa_samples();
 
-        let layout = vec![self.view_layout.clone(), self.texture_layout.clone()];
+        let layout = vec![self.view_layout.clone()];
 
         let vertex_layout = VertexBufferLayout::from_vertex_formats(
             VertexStepMode::Instance,
@@ -68,19 +66,12 @@ impl SpecializedRenderPipeline for UiPipeline {
                 VertexFormat::Float32x4,
                 // size
                 VertexFormat::Float32x2,
-                // flags
-                VertexFormat::Uint32,
                 // corner_radii
                 VertexFormat::Float32x4,
                 // border color
                 VertexFormat::Float32x4,
                 // border widths
                 VertexFormat::Float32x4,
-                // glyph: [left, top, scale]
-                // image: [ObjectPosition.x, ObjectPosition.y, ObjectFit]
-                VertexFormat::Float32x3,
-                // flipped
-                VertexFormat::Uint32x2,
             ],
         );
 
@@ -116,32 +107,20 @@ impl SpecializedRenderPipeline for UiPipeline {
                 alpha_to_coverage_enabled: false,
             },
             layout,
-            label: Some("moon_ui_pipeline".into()),
+            label: Some("moon_ui_quad_pipeline".into()),
             ..default()
         }
     }
 }
 
-pub fn init_ui_pipeline(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn init_ui_quad_pipeline(mut commands: Commands, asset_server: Res<AssetServer>) {
     let view_layout = BindGroupLayoutDescriptor::new(
-        "moon_ui_view_layout",
+        "moon_ui_quad_view_layout",
         &BindGroupLayoutEntries::single(ShaderStages::VERTEX, uniform_buffer::<ViewUniform>(true)),
     );
 
-    let texture_layout = BindGroupLayoutDescriptor::new(
-        "moon_ui_texture_layout",
-        &BindGroupLayoutEntries::sequential(
-            ShaderStages::FRAGMENT,
-            (
-                texture_2d(TextureSampleType::Float { filterable: true }),
-                sampler(SamplerBindingType::Filtering),
-            ),
-        ),
-    );
-
-    commands.insert_resource(UiPipeline {
+    commands.insert_resource(UiQuadPipeline {
         view_layout,
-        texture_layout,
-        shader: load_embedded_asset!(asset_server.as_ref(), "../../shaders/primitive.wgsl"),
+        shader: load_embedded_asset!(asset_server.as_ref(), "../../shaders/quad.wgsl"),
     });
 }

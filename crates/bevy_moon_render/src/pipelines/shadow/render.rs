@@ -22,8 +22,8 @@ use crate::{
 
 use super::{
     ExtractedUiShadows, UiShadowBatch, UiShadowMeta, UiShadowViewBindGroup,
-    draw::DrawShadows,
-    pipeline::{UiShadowsPipeline, UiShadowsPipelineKey},
+    draw::DrawUiShadow,
+    pipeline::{UiShadowPipeline, UiShadowPipelineKey},
 };
 
 pub fn queue_shadows(
@@ -31,13 +31,13 @@ pub fn queue_shadows(
     render_views: Query<&ExtractedView, With<MoonUiViewTarget>>,
     extracted_ui_instances: Res<ExtractedUiShadows>,
     ui_stack_map: Res<UiStackMap>,
-    ui_pipeline: Res<UiShadowsPipeline>,
+    ui_shadow_pipeline: Res<UiShadowPipeline>,
     pipeline_cache: Res<PipelineCache>,
     draw_functions: Res<DrawFunctions<TransparentUi>>,
-    mut pipelines: ResMut<SpecializedRenderPipelines<UiShadowsPipeline>>,
+    mut pipelines: ResMut<SpecializedRenderPipelines<UiShadowPipeline>>,
     mut render_phases: ResMut<ViewSortedRenderPhases<TransparentUi>>,
 ) {
-    let Some(draw_function) = draw_functions.read().get_id::<DrawShadows>() else {
+    let Some(draw_function) = draw_functions.read().get_id::<DrawUiShadow>() else {
         return;
     };
 
@@ -59,8 +59,8 @@ pub fn queue_shadows(
 
         let pipeline = pipelines.specialize(
             &pipeline_cache,
-            &ui_pipeline,
-            UiShadowsPipelineKey {
+            &ui_shadow_pipeline,
+            UiShadowPipelineKey {
                 mesh_key,
                 samples: 4,
             },
@@ -87,11 +87,11 @@ pub fn queue_shadows(
     }
 }
 
-pub fn prepare_div_view_bind_groups(
+pub fn prepare_view_bind_groups(
     mut commands: Commands,
     render_device: Res<RenderDevice>,
     pipeline_cache: Res<PipelineCache>,
-    ui_shadows_pipeline: Res<UiShadowsPipeline>,
+    ui_shadow_pipeline: Res<UiShadowPipeline>,
     view_uniforms: Res<ViewUniforms>,
     views: Query<Entity, (With<ExtractedView>, With<MoonUiViewTarget>)>,
 ) {
@@ -101,8 +101,8 @@ pub fn prepare_div_view_bind_groups(
 
     for entity in &views {
         let value = render_device.create_bind_group(
-            "moon_ui_view_bind_group",
-            &pipeline_cache.get_bind_group_layout(&ui_shadows_pipeline.view_layout),
+            "moon_ui_shadow_view_bind_group",
+            &pipeline_cache.get_bind_group_layout(&ui_shadow_pipeline.view_layout),
             &BindGroupEntries::single(view_binding.clone()),
         );
 
@@ -117,22 +117,22 @@ pub fn prepare_shadows(
     render_queue: Res<RenderQueue>,
     draw_functions: Res<DrawFunctions<TransparentUi>>,
     mut commands: Commands,
-    mut ui_meta: ResMut<UiShadowMeta>,
-    mut extracted_ui_instances: ResMut<ExtractedUiShadows>,
+    mut ui_shadow_meta: ResMut<UiShadowMeta>,
+    mut extracted_ui_shadows: ResMut<ExtractedUiShadows>,
     mut render_phases: ResMut<ViewSortedRenderPhases<TransparentUi>>,
     // maps `main entity` to `render entity`
     mut live_entities: Local<MainEntityHashMap<Entity>>,
     mut cached_draw_function: Local<Option<DrawFunctionId>>,
 ) {
-    ui_meta.instance_buffer.clear();
+    ui_shadow_meta.instance_buffer.clear();
 
     let draw_function =
-        *cached_draw_function.get_or_insert_with(|| draw_functions.read().id::<DrawShadows>());
+        *cached_draw_function.get_or_insert_with(|| draw_functions.read().id::<DrawUiShadow>());
 
     let mut batches = EntityHashMap::<UiShadowBatch>::with_capacity(live_entities.capacity());
 
     for (item, instance) in render_phases.filter(draw_function).filter_map(|item| {
-        extracted_ui_instances
+        extracted_ui_shadows
             .instances
             .get(item.extracted_index)
             // SAFETY: if remove the filter
@@ -143,7 +143,7 @@ pub fn prepare_shadows(
             .entry(item.main_entity())
             .or_insert_with(|| item.entity());
 
-        let index = ui_meta.instance_buffer.push(instance) as u32;
+        let index = ui_shadow_meta.instance_buffer.push(instance) as u32;
 
         batches
             .entry(render_entity)
@@ -158,12 +158,12 @@ pub fn prepare_shadows(
             });
     }
 
-    ui_meta
+    ui_shadow_meta
         .instance_buffer
         .write_buffer(&render_device, &render_queue);
 
     commands.try_insert_batch(batches);
 
-    extracted_ui_instances.instances.clear();
+    extracted_ui_shadows.instances.clear();
     live_entities.clear();
 }

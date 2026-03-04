@@ -1,7 +1,6 @@
 #import bevy_render::view::View
 
 #import bevy_moon::maths::{from_3x4_to_mat4x4}
-#import bevy_moon::flags::{TEXTURED, GLYPH, enabled}
 #import bevy_moon::quad::{
     normalize_vertex_index,
     get_vertex_by_index, 
@@ -16,9 +15,6 @@
 
 @group(0) @binding(0) var<uniform> view: View;
 
-@group(1) @binding(0) var sprite_texture: texture_2d<f32>;
-@group(1) @binding(1) var sprite_sampler: sampler;
-
 struct VertexInput {
     @builtin(vertex_index) vertex_id: u32,
 
@@ -29,15 +25,9 @@ struct VertexInput {
 
     @location(4) color: vec4<f32>,
     @location(5) size: vec2<f32>,
-    @location(6) flags: u32,
-    @location(7) corner_radii: vec4<f32>,
-    @location(8) border_color: vec4<f32>,
-    @location(9) border_widths: vec4<f32>,
-
-    // glyph: [left, top, scale]
-    // image: [ObjectPosition.x, ObjectPosition.y, ObjectFit]
-    @location(10) extra: vec3<f32>,
-    @location(11) flip: vec2<u32>,
+    @location(6) corner_radii: vec4<f32>,
+    @location(7) border_color: vec4<f32>,
+    @location(8) border_widths: vec4<f32>,
 };
 
 struct VertexOutput {
@@ -48,12 +38,9 @@ struct VertexOutput {
 
     @location(2) @interpolate(flat) color: vec4<f32>,
     @location(3) @interpolate(flat) size: vec2<f32>,
-    @location(4) @interpolate(flat) flags: u32,
-    @location(5) @interpolate(flat) corner_radii: vec4<f32>,
-    @location(6) @interpolate(flat) border_color: vec4<f32>,
-    @location(7) @interpolate(flat) border_widths: vec4<f32>,
-    @location(8) @interpolate(flat) extra: vec3<f32>,
-    @location(9) @interpolate(flat) flip: vec2<u32>,
+    @location(4) @interpolate(flat) corner_radii: vec4<f32>,
+    @location(5) @interpolate(flat) border_color: vec4<f32>,
+    @location(6) @interpolate(flat) border_widths: vec4<f32>,
 };
 
 @vertex
@@ -74,46 +61,15 @@ fn vertex(in: VertexInput) -> VertexOutput {
         local_position,
         in.color,
         in.size,
-        in.flags,
         in.corner_radii,
         in.border_color,
         in.border_widths,
-        in.extra,
-        in.flip
     );
 }
 
 @fragment
 fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     var color = in.color;
-
-    // should split this into a standalone pipeline
-    if (enabled(in.flags, TEXTURED)) {
-        var uv = atlas::flip_uv(in.uv, in.flip);
-
-        let src_size = vec2<f32>(textureDimensions(sprite_texture, 0));
-        let dst_size = in.size;
-        let position = in.extra.xy;
-
-        if (in.flags == GLYPH) {
-            let scale_factor = in.extra.z;
-            // In rust side, `in.position` and `in.size` have been applied a `scale_factor`
-            let current_src_size = src_size * scale_factor;
-            uv = atlas::glyph_tile_uv(uv, dst_size, current_src_size, position);
-            let a = textureSample(sprite_texture, sprite_sampler, uv).a;
-            color.a *= a;
-        } else {
-            let mode = u32(in.extra.z);
-            uv = atlas::object_fit(uv, dst_size, src_size, position, mode);
-            let d = textureSample(sprite_texture, sprite_sampler, uv);
-            color *= d;
-        }
-        
-        // fast path
-        if (color.a <= 0.0) {
-            discard;
-        }
-    }
 
     let corner_radii = in.corner_radii;
     let border_widths = in.border_widths;

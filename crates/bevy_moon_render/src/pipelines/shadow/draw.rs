@@ -14,11 +14,15 @@ use bevy_render::{
 
 use super::{UiShadowBatch, UiShadowMeta, UiShadowViewBindGroup};
 
-pub type DrawShadows = (SetItemPipeline, SetShadowViewBindGroup<0>, DrawShadow);
+pub type DrawUiShadow = (
+    SetItemPipeline,
+    SetUiShadowViewBindGroup<0>,
+    DrawUiShadowBatch,
+);
 
-pub struct SetShadowViewBindGroup<const I: usize>;
+pub struct SetUiShadowViewBindGroup<const I: usize>;
 
-impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetShadowViewBindGroup<I> {
+impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUiShadowViewBindGroup<I> {
     type Param = SRes<UiShadowMeta>;
     type ViewQuery = (Read<ViewUniformOffset>, Read<UiShadowViewBindGroup>);
     type ItemQuery = ();
@@ -36,9 +40,9 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetShadowViewBindGroup<I
     }
 }
 
-pub struct DrawShadow;
+pub struct DrawUiShadowBatch;
 
-impl<P: PhaseItem> RenderCommand<P> for DrawShadow {
+impl<P: PhaseItem> RenderCommand<P> for DrawUiShadowBatch {
     type Param = SRes<UiShadowMeta>;
     type ViewQuery = ();
     type ItemQuery = Read<UiShadowBatch>;

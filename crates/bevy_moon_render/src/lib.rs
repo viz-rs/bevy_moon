@@ -8,6 +8,6 @@ mod transparent;
 mod view;
 
 pub mod prelude {
-    pub use crate::pipelines::primitive::systems::ExtractUiSystems;
+    pub use crate::pipelines::ExtractUiSystems;
     pub use crate::plugin::MoonRenderPlugin;
 }
