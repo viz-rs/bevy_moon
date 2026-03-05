@@ -5,7 +5,7 @@ use bytemuck::{Pod, Zeroable};
 pub struct UiQuad {
     /// A `[[f32; 4]; 4]` 3D array storing data in column major order (4Cx4R).
     ///
-    /// Sees [`bevy_math::Affine3A::to_cols_array_2d`].
+    /// Sees [`bevy_math::Mat4::to_cols_array_2d`].
     pub matrix: [[f32; 4]; 4],
 
     pub color: [f32; 4],
