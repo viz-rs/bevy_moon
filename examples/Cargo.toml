@@ -5,12 +5,12 @@ edition.workspace = true
 
 [dependencies]
 bevy = { workspace = true, default-features = false, features = [
-  "pan_camera", 
   "default_app",
   "default_platform",
   "2d_bevy_render",
   "scene",
   "picking",
+  "pan_camera",
 ] }
 
 bevy_moon.workspace = true

@@ -36,7 +36,7 @@ impl Plugin for MoonInternalRenderPlugin {
             (
                 ExtractUiSystems::CameraViews,
                 ExtractUiSystems::Shadows,
-                ExtractUiSystems::Divs,
+                ExtractUiSystems::Quads,
                 ExtractUiSystems::Images,
                 ExtractUiSystems::Texts,
             )

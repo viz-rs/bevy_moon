@@ -3,7 +3,7 @@ use bytemuck::{Pod, Zeroable};
 #[repr(C)]
 #[derive(Clone, Copy, Pod, Zeroable)]
 pub struct UiShadow {
-    /// A `[[f32; 4]; 4]` 3D array storing data in column major order (3Cx4R).
+    /// A `[[f32; 4]; 4]` 3D array storing data in column major order (4Cx4R).
     ///
     /// Sees [`bevy_math::Mat4::to_cols_array_2d`].
     pub matrix: [[f32; 4]; 4],

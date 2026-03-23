@@ -97,7 +97,7 @@ pub struct ExtractedUiInstances<T> {
 pub enum ExtractUiSystems {
     CameraViews,
     Shadows,
-    Divs,
+    Quads,
     Images,
     Texts,
 }

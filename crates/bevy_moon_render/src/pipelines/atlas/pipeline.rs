@@ -57,7 +57,7 @@ impl SpecializedRenderPipeline for UiAtlasPipeline {
                 VertexFormat::Float32x4,
                 // z_axis
                 VertexFormat::Float32x4,
-                // translation
+                // w_axis, its also translation
                 VertexFormat::Float32x4,
                 // color
                 VertexFormat::Float32x4,

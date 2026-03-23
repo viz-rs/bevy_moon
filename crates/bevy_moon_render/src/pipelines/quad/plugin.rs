@@ -35,7 +35,7 @@ impl Plugin for MoonQuadRenderPlugin {
             .add_systems(RenderStartup, init_ui_quad_pipeline)
             .add_systems(
                 ExtractSchedule,
-                extract_quads.in_set(ExtractUiSystems::Divs),
+                extract_quads.in_set(ExtractUiSystems::Quads),
             )
             .add_systems(
                 Render,

@@ -105,7 +105,7 @@ struct VertexInput {
     @location(0) x_axis: vec4<f32>,
     @location(1) y_axis: vec4<f32>,
     @location(2) z_axis: vec4<f32>,
-    @location(3) translation: vec4<f32>,
+    @location(3) w_axis: vec4<f32>,
 
     @location(4) color: vec4<f32>,
     @location(5) size: vec2<f32>,
@@ -133,7 +133,7 @@ fn vertex(in: VertexInput) -> VertexOutput {
     let bounds = in.size + margin * 2.0; // shadow bounds
     let local_position = vertex * bounds;
     let world_from_local = vec4(local_position, 0.0, 1.0);
-    let matrix = mat4x4(in.x_axis, in.y_axis, in.z_axis, in.translation);
+    let matrix = mat4x4(in.x_axis, in.y_axis, in.z_axis, in.w_axis);
     let world_position = matrix * world_from_local;
     let clip_position = view.clip_from_world * world_position;
 

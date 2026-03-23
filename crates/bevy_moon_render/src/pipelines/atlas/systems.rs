@@ -199,27 +199,27 @@ fn extract_single_text(
     let corner_radii = div.corner_radii.to_array();
 
     let mut color = text_color.to_linear();
-    let mut current_span = usize::MAX;
+    let mut current_selection_index = usize::MAX;
 
     for &PositionedGlyph {
         position,
-        span_index,
+        section_index,
         atlas_info: GlyphAtlasInfo { texture, rect, .. },
         ..
     } in text_layout_info.glyphs.iter()
     {
-        if span_index != current_span {
+        if current_selection_index != section_index {
             color = text_colors
                 .get(
                     computed_text_block
                         .entities()
-                        .get(span_index)
+                        .get(section_index)
                         .map(|t| t.entity)
                         .unwrap_or(Entity::PLACEHOLDER),
                 )
                 .map(|text_color| text_color.0.to_linear())
                 .unwrap_or_default();
-            current_span = span_index;
+            current_selection_index = section_index;
         }
 
         let color = color.to_f32_array();
