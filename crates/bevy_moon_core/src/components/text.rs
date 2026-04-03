@@ -14,9 +14,9 @@ use bevy_ecs::{
 use bevy_math::Vec2;
 use bevy_reflect::{Reflect, prelude::ReflectDefault};
 use bevy_text::{
-    ComputedTextBlock, Font, FontAtlasSet, FontCx, FontHinting, LayoutCx, LineBreak, LineHeight,
-    RemSize, ScaleCx, TextBounds, TextColor, TextError, TextFont, TextLayout, TextLayoutInfo,
-    TextMeasureInfo, TextPipeline, TextReader, TextSection,
+    ComputedTextBlock, Font, FontAtlasSet, FontCx, FontHinting, LayoutCx, LetterSpacing, LineBreak,
+    LineHeight, RemSize, ScaleCx, TextBounds, TextColor, TextError, TextFont, TextLayout,
+    TextLayoutInfo, TextMeasureInfo, TextPipeline, TextReader, TextSection,
 };
 
 use crate::{
@@ -34,6 +34,7 @@ use super::div::Div;
     Div,
     ContentSize,
     LineHeight,
+    LetterSpacing,
     TextColor,
     TextFlags,
     TextFont,

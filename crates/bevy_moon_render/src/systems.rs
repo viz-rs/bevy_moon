@@ -6,7 +6,6 @@ use bevy_ecs::{
     system::{Commands, Local, Query, Res, ResMut},
 };
 use bevy_math::{URect, UVec4};
-use bevy_mesh::PrimitiveTopology;
 use bevy_platform::collections::HashSet;
 use bevy_render::{
     Extract,
@@ -95,9 +94,8 @@ pub fn extract_camera_views<const CAMERA_SUBVIEW: u32>(
         let retained_view_entity =
             RetainedViewEntity::new(main_entity.into(), None, CAMERA_SUBVIEW);
 
-        let mesh_key = Mesh2dPipelineKey::from_hdr(hdr)
-            | Mesh2dPipelineKey::from_msaa_samples(msaa.samples())
-            | Mesh2dPipelineKey::from_primitive_topology(PrimitiveTopology::TriangleList);
+        let mesh_key =
+            Mesh2dPipelineKey::from_hdr(hdr) | Mesh2dPipelineKey::from_msaa_samples(msaa.samples());
 
         // Creates the UI view.
         let ui_camera_view = commands
@@ -115,6 +113,7 @@ pub fn extract_camera_views<const CAMERA_SUBVIEW: u32>(
                     ),
                     hdr,
                     invert_culling: false,
+                    compositing_space: None,
                     color_grading: Default::default(),
                 },
                 // Link to the main camera view.

@@ -21,7 +21,6 @@ version = "0.1.0"
 bevy_moon = { path = "crates/bevy_moon" }
 bevy_moon_core = { path = "crates/bevy_moon_core" }
 bevy_moon_render = { path = "crates/bevy_moon_render" }
-bevy_moon_glyphs = { path = "crates/bevy_moon_glyphs" }
 
 # bevy
 bevy = { version = "0.19.0-dev", default-features = false, git = "https://github.com/bevyengine/bevy.git" }
